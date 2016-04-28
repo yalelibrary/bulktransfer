@@ -48,68 +48,29 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         });
 
-        // Add le menu:
+        // Add the menu:
 
-        //Where the GUI is created:
         JMenuBar menuBar;
-        JMenu menu, submenu;
+        JMenu menu;
         JMenuItem menuItem;
-        JRadioButtonMenuItem rbMenuItem;
-        JCheckBoxMenuItem cbMenuItem;
 
         //Create the menu bar.
         menuBar = new JMenuBar();
 
         //Build the first menu.
-        menu = new JMenu("A Menu");
+        menu = new JMenu("Menu");
         menu.setMnemonic(KeyEvent.VK_A);
         menu.getAccessibleContext().setAccessibleDescription(
                 "The only menu in this program that has menu items");
         menuBar.add(menu);
 
         // Create an item:
-        menuItem = new JMenuItem("A text-only menu item",
+        menuItem = new JMenuItem("About",
                 KeyEvent.VK_T);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_1, ActionEvent.ALT_MASK));
-        menuItem.getAccessibleContext().setAccessibleDescription(
-                "This doesn't really do anything");
-        menuItem.addActionListener(new Action() {
-            @Override
-            public Object getValue(String key) {
-                return null;
-            }
+        menuItem.addActionListener(new DialogAction());
 
-            @Override
-            public void putValue(String key, Object value) {
-
-            }
-
-            @Override
-            public void setEnabled(boolean b) {
-
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return false;
-            }
-
-            @Override
-            public void addPropertyChangeListener(PropertyChangeListener listener) {
-
-            }
-
-            @Override
-            public void removePropertyChangeListener(PropertyChangeListener listener) {
-
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Eggs are not supposed to be green.");
-            }
-        });
         menu.add(menuItem);
 
         menuBar.add(menu);
@@ -330,6 +291,43 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                 txtDetails.append("Done!\n");
             }
+        }
+    }
+
+    class DialogAction implements Action {
+        @Override
+        public Object getValue(String key) {
+            return null;
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(null, "Desktop utility for BRBL");
         }
     }
 
