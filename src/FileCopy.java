@@ -36,7 +36,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     }
 
     private void buildGUI() {
-        setTitle("BRBL File Copier Utility");
+        setTitle("BRBL File Transfer Utility");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
@@ -57,7 +57,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         menuBar = new JMenuBar();
 
         //Build the first menu.
-        menu = new JMenu("Menu");
+        menu = new JMenu("Actions");
         menu.setMnemonic(KeyEvent.VK_A); //?
         menuBar.add(menu);
 
@@ -83,8 +83,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         // end: add menu
 
-        JLabel lblSource = new JLabel("Source Path: ");
-        JLabel lblTarget = new JLabel("Target Path: ");
+        JLabel lblSource = new JLabel("Source: ");
+        JLabel lblTarget = new JLabel("Target: ");
         txtSource = new JTextField(50);
         txtTarget = new JTextField(50);
         JLabel lblProgressAll = new JLabel("Overall: ");
@@ -98,7 +98,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         DefaultCaret caret = (DefaultCaret) txtDetails.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         JScrollPane scrollPane = new JScrollPane(txtDetails, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        btnCopy = new JButton("Copy");
+        btnCopy = new JButton("Start");
         btnCopy.setFocusPainted(false);
         btnCopy.setEnabled(false);
         btnCopy.addActionListener(this);
@@ -142,7 +142,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panProgressBars.add(progressCurrent, BorderLayout.CENTER);
 
         JPanel panInput = new JPanel(new BorderLayout(0, 5));
-        panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Input"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panProgress = new JPanel(new BorderLayout(0, 5));
         panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panDetails = new JPanel(new BorderLayout());
