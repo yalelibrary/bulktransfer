@@ -52,26 +52,31 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         JMenuBar menuBar;
         JMenu menu;
-        JMenuItem menuItem;
 
         //Create the menu bar.
         menuBar = new JMenuBar();
 
         //Build the first menu.
         menu = new JMenu("Menu");
-        menu.setMnemonic(KeyEvent.VK_A);
-        menu.getAccessibleContext().setAccessibleDescription(
-                "The only menu in this program that has menu items");
+        menu.setMnemonic(KeyEvent.VK_A); //?
         menuBar.add(menu);
 
-        // Create an item:
-        menuItem = new JMenuItem("About",
+        // Create first menu item:
+        final JMenuItem menuItem = new JMenuItem("About",
                 KeyEvent.VK_T);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                KeyEvent.VK_1, ActionEvent.ALT_MASK));
-        menuItem.addActionListener(new DialogAction());
-
+        //menuItem.setAccelerator(KeyStroke.getKeyStroke(
+               // KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        menuItem.addActionListener(new AboutDialogAction());
         menu.add(menuItem);
+
+
+        // Create second menu item:
+        final JMenuItem menuItem2 = new JMenuItem("Help",
+                KeyEvent.VK_H);
+        //menuItem2.setAccelerator(KeyStroke.getKeyStroke(
+                //KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        menuItem2.addActionListener(new HelpAction());
+        menu.add(menuItem2);
 
         menuBar.add(menu);
         setJMenuBar(menuBar);
@@ -294,7 +299,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
     }
 
-    class DialogAction implements Action {
+    class AboutDialogAction implements Action {
         @Override
         public Object getValue(String key) {
             return null;
@@ -328,6 +333,43 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         @Override
         public void actionPerformed(ActionEvent e) {
             JOptionPane.showMessageDialog(null, "Desktop utility for BRBL");
+        }
+    }
+
+    class HelpAction implements Action {
+        @Override
+        public Object getValue(String key) {
+            return null;
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(null, "Help is on the way");
         }
     }
 
