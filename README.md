@@ -1,6 +1,3 @@
-## Create a menu:
+##Author
 
-https://docs.oracle.com/javase/tutorial/uiswing/components/menu.html
-## Create a dialog:
-
-https://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html
+Osman Din
