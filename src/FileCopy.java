@@ -98,7 +98,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         DefaultCaret caret = (DefaultCaret) txtDetails.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         JScrollPane scrollPane = new JScrollPane(txtDetails, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        btnCopy = new JButton("Start");
+        btnCopy = new JButton("Copy");
         btnCopy.setFocusPainted(false);
         btnCopy.setEnabled(false);
         btnCopy.addActionListener(this);
