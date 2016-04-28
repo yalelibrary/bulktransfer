@@ -30,6 +30,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private JButton btnCopy;
     private CopyTask task;
     private JPopupMenu popup;
+    String source = "";
+    String target = "";
+
 
     public FileCopy() {
         buildGUI();
@@ -86,7 +89,48 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         JLabel lblSource = new JLabel("Source: ");
         JLabel lblTarget = new JLabel("Target: ");
         txtSource = new JTextField(50);
+        txtSource.setText("");
         txtTarget = new JTextField(50);
+        txtTarget.setText("");
+
+        JPanel buttonsPanel = new JPanel();
+
+        // Select source button
+        JButton selectSourceButton = new JButton("Select Source Dir");
+        selectSourceButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int returnValue = fileChooser.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    //System.out.println(selectedFile.getName());
+                    source = selectedFile.getAbsolutePath();
+                    txtSource.setText(source);
+
+                }
+            }
+        });
+
+        // Select target button:
+        JButton selectTargetButton = new JButton("Select Target Dir");
+        selectTargetButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int returnValue = fileChooser.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    //System.out.println(selectedFile.getName());
+                    target = selectedFile.getAbsolutePath();
+                    txtTarget.setText(target);
+                }
+            }
+        });
+
+        buttonsPanel.add(selectSourceButton, BorderLayout.WEST);
+        buttonsPanel.add(selectTargetButton, BorderLayout.EAST);
+
         JLabel lblProgressAll = new JLabel("Overall: ");
         JLabel lblProgressCurrent = new JLabel("Current File: ");
         progressAll = new JProgressBar(0, 100);
@@ -158,7 +202,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panControls.add(btnCopy, BorderLayout.CENTER);
 
         JPanel panUpper = new JPanel(new BorderLayout());
-        panUpper.add(panInput, BorderLayout.NORTH);
+        panUpper.add(buttonsPanel, BorderLayout.NORTH);
+        panUpper.add(panInput, BorderLayout.CENTER);
         panUpper.add(panProgress, BorderLayout.SOUTH);
 
         contentPane.add(panUpper, BorderLayout.NORTH);
