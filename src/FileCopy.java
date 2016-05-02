@@ -1,4 +1,4 @@
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -21,12 +21,14 @@ import javax.swing.text.DefaultCaret;
 
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
     private static final long serialVersionUID = 1L;
+    public static final String DONE = "OK\n";
 
     private JTextField txtSource;
     private JTextField txtTarget;
     private JProgressBar progressAll;
     private JProgressBar progressCurrent;
     private JTextArea txtDetails;
+    private JTextArea txtIdentifiers;
     private JButton btnCopy;
     private CopyTask task;
     private JPopupMenu popup;
@@ -142,6 +144,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         DefaultCaret caret = (DefaultCaret) txtDetails.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         JScrollPane scrollPane = new JScrollPane(txtDetails, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        txtIdentifiers = new JTextArea(5, 50);
+        txtIdentifiers.setEditable(true);
+        DefaultCaret caret2 = (DefaultCaret) txtIdentifiers.getCaret();
+        caret2.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        JScrollPane scrollPane2 = new JScrollPane(txtIdentifiers);
+
+
+
         btnCopy = new JButton("Copy");
         btnCopy.setFocusPainted(false);
         btnCopy.setEnabled(false);
@@ -189,8 +200,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panProgress = new JPanel(new BorderLayout(0, 5));
         panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        JPanel panDetails = new JPanel(new BorderLayout());
-        panDetails.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Details"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        final JPanel panDetails = new JPanel(new BorderLayout());
+        panDetails.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        final JPanel panIds = new JPanel(new BorderLayout());
+        panIds.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Identifiers"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panControls = new JPanel(new BorderLayout());
         panControls.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
@@ -199,6 +212,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panProgress.add(panProgressLabels, BorderLayout.LINE_START);
         panProgress.add(panProgressBars, BorderLayout.CENTER);
         panDetails.add(scrollPane, BorderLayout.CENTER);
+        panIds.add(scrollPane2, BorderLayout.CENTER);
         panControls.add(btnCopy, BorderLayout.CENTER);
 
         JPanel panUpper = new JPanel(new BorderLayout());
@@ -206,8 +220,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panUpper.add(panInput, BorderLayout.CENTER);
         panUpper.add(panProgress, BorderLayout.SOUTH);
 
+        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         contentPane.add(panUpper, BorderLayout.NORTH);
         contentPane.add(panDetails, BorderLayout.CENTER);
+        contentPane.add(panIds, BorderLayout.CENTER);
         contentPane.add(panControls, BorderLayout.SOUTH);
 
         pack();
@@ -277,7 +293,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         public Void doInBackground() throws Exception {
             txtDetails.append("Retrieving some info ... ");
             retrieveTotalBytes(source);
-            txtDetails.append("Done!\n");
+            txtDetails.append(DONE);
 
             copyFiles(source, target);
             return null;
