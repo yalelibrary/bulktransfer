@@ -314,11 +314,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public Void doInBackground() throws Exception {
-            txtDetails.append("Retrieving some info ... ");
+            txtDetails.append(". . . . . \n");
             retrieveTotalBytes(source);
             txtDetails.append(DONE);
 
             copyFiles(source, target);
+            txtDetails.append("OK\n");
             return null;
         }
 
@@ -345,6 +346,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private void copyFiles(File sourceFile, File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
+
+
                 if (!targetFile.exists()) targetFile.mkdirs();
 
                 String[] filePaths = sourceFile.list();
@@ -353,13 +356,22 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     File srcFile = new File(sourceFile, filePath);
                     File destFile = new File(targetFile, filePath);
 
+                    if (srcFile.isDirectory()) {
+                        if (srcFile.getName().equals(txtIdentifiers.getText())) {
+                            System.out.println("Matched directory identifier");
+                        } else {
+                            txtDetails.append("Skipped:" + srcFile.getName() + "\n");
+                            return;
+                        }
+                    }
                     copyFiles(srcFile, destFile);
                 }
             } else {
 
 
-                txtDetails.append("Selected master:" + masterButton.isSelected() + "\n");   //TODO remove
+                txtDetails.append("Selected master:" + masterButton.isSelected() + "\n");
                 txtDetails.append("Selected derivative:" + derivativeButton.isSelected() + "\n");
+                txtDetails.append("Selected identifiers:" + txtIdentifiers.getText() + "\n");
 
                 txtDetails.append("Copying " + sourceFile.getAbsolutePath() + " ... ");
 
@@ -383,7 +395,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                 publish(100);
 
-                txtDetails.append("Done!\n");
+                //txtDetails.append("OK\n");
             }
         }
     }
@@ -421,7 +433,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, "Desktop utility for BRBL");
+            JOptionPane.showMessageDialog(null, "BRBL Tiff Finder");
         }
     }
 
