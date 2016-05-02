@@ -103,7 +103,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         JPanel buttonsPanel = new JPanel();
 
         // Select source button
-        JButton selectSourceButton = new JButton("Select Source Dir");
+        JButton selectSourceButton = new JButton("Browse Source Folder");
         selectSourceButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 JFileChooser fileChooser = new JFileChooser();
@@ -120,7 +120,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         });
 
         // Select target button:
-        JButton selectTargetButton = new JButton("Select Target Dir");
+        JButton selectTargetButton = new JButton("Browse Target Folder");
         selectTargetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 JFileChooser fileChooser = new JFileChooser();
@@ -221,8 +221,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panProgress = new JPanel(new BorderLayout(0, 5));
         panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        final JPanel panDetails = new JPanel(new BorderLayout());
-        panDetails.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        final JPanel infoPanel = new JPanel(new BorderLayout());
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         final JPanel panIds = new JPanel(new BorderLayout());
         panIds.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Identifiers"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panControls = new JPanel(new BorderLayout());
@@ -231,21 +231,22 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInput.add(panInputLabels, BorderLayout.LINE_START);
         panInput.add(panInputFields, BorderLayout.CENTER);
         panInput.add(checkboxPanel, BorderLayout.SOUTH);
+        panIds.add(scrollPane2, BorderLayout.CENTER);
         panProgress.add(panProgressLabels, BorderLayout.LINE_START);
         panProgress.add(panProgressBars, BorderLayout.CENTER);
-        panDetails.add(scrollPane, BorderLayout.CENTER);
-        panIds.add(scrollPane2, BorderLayout.CENTER);
+        infoPanel.add(scrollPane, BorderLayout.CENTER);
+        infoPanel.add(panProgress, BorderLayout.SOUTH);
         panControls.add(btnCopy, BorderLayout.CENTER);
 
         JPanel panUpper = new JPanel(new BorderLayout());
         panUpper.add(buttonsPanel, BorderLayout.NORTH);
         panUpper.add(panInput, BorderLayout.CENTER);
-        panUpper.add(panProgress, BorderLayout.SOUTH);
+        //panUpper.add(panProgress, BorderLayout.SOUTH);
 
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         contentPane.add(panUpper, BorderLayout.NORTH);
-        contentPane.add(panDetails, BorderLayout.CENTER);
         contentPane.add(panIds, BorderLayout.CENTER);
+        contentPane.add(infoPanel, BorderLayout.CENTER);
         contentPane.add(panControls, BorderLayout.SOUTH);
 
         pack();
