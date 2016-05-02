@@ -22,6 +22,9 @@ import javax.swing.text.DefaultCaret;
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
     private static final long serialVersionUID = 1L;
     public static final String DONE = "OK\n";
+    public static final String MASTER = "Master";
+    public static final String TIFF = "TIFF";
+    public static final String DERIVATIVE = "Derivative";
 
     private JTextField txtSource;
     private JTextField txtTarget;
@@ -155,20 +158,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         //checkbox:
 
-        masterButton = new JCheckBox("MASTER");
+        masterButton = new JCheckBox(MASTER);
         masterButton.setMnemonic(KeyEvent.VK_B);
-        masterButton.setActionCommand("TIFF");
+        masterButton.setActionCommand(MASTER);
         masterButton.setSelected(true);
 
-        derivativeButton = new JCheckBox("DERIVATIVE");
+        derivativeButton = new JCheckBox(DERIVATIVE);
         derivativeButton.setMnemonic(KeyEvent.VK_B);
-        derivativeButton.setActionCommand("TIFF");
+        derivativeButton.setActionCommand(DERIVATIVE);
         derivativeButton.setSelected(true);
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(masterButton);
-        group.add(derivativeButton);
-
 
         JPanel checkboxPanel = new JPanel(new GridLayout(0, 1));
         checkboxPanel.add(masterButton);
