@@ -459,7 +459,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, "Help is on the way");
+            JOptionPane.showMessageDialog(null, "Instructions (Mac): \n\n sudo mount -t smbfs //DOMAIN\\;netid@url/share dir \n sudo java -cp . FileCopy \n\n" +
+                    "Instructions (Cent OS) \n sudo /sbin/mount.cifs //url/share dir -o user=netid, domain=");
         }
     }
 
