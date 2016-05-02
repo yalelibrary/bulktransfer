@@ -34,6 +34,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private JPopupMenu popup;
     String source = "";
     String target = "";
+    JCheckBox masterButton;
+    JCheckBox derivativeButton;
 
 
     public FileCopy() {
@@ -151,7 +153,28 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         caret2.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         JScrollPane scrollPane2 = new JScrollPane(txtIdentifiers);
 
+        //checkbox:
 
+        masterButton = new JCheckBox("MASTER");
+        masterButton.setMnemonic(KeyEvent.VK_B);
+        masterButton.setActionCommand("TIFF");
+        masterButton.setSelected(true);
+
+        derivativeButton = new JCheckBox("DERIVATIVE");
+        derivativeButton.setMnemonic(KeyEvent.VK_B);
+        derivativeButton.setActionCommand("TIFF");
+        derivativeButton.setSelected(true);
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(masterButton);
+        group.add(derivativeButton);
+
+
+        JPanel checkboxPanel = new JPanel(new GridLayout(0, 1));
+        checkboxPanel.add(masterButton);
+        checkboxPanel.add(derivativeButton);
+
+        // End: checkbox
 
         btnCopy = new JButton("Copy");
         btnCopy.setFocusPainted(false);
@@ -209,6 +232,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         panInput.add(panInputLabels, BorderLayout.LINE_START);
         panInput.add(panInputFields, BorderLayout.CENTER);
+        panInput.add(checkboxPanel, BorderLayout.SOUTH);
         panProgress.add(panProgressLabels, BorderLayout.LINE_START);
         panProgress.add(panProgressBars, BorderLayout.CENTER);
         panDetails.add(scrollPane, BorderLayout.CENTER);
@@ -333,6 +357,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     copyFiles(srcFile, destFile);
                 }
             } else {
+
+
+                txtDetails.append("Selected master:" + masterButton.isSelected() + "\n");   //TODO remove
+                txtDetails.append("Selected derivative:" + derivativeButton.isSelected() + "\n");
+
                 txtDetails.append("Copying " + sourceFile.getAbsolutePath() + " ... ");
 
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
@@ -434,4 +463,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
     }
 
+
+    /**
+     * For Radio buttons
+     */
+    private class RadioListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JRadioButton button = (JRadioButton) e.getSource();
+        }
+    }
+
 }
+
