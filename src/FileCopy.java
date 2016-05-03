@@ -22,9 +22,9 @@ import javax.swing.text.DefaultCaret;
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
     private static final long serialVersionUID = 1L;
     public static final String DONE = "OK\n";
-    public static final String MASTER = "Master";
-    public static final String TIFF = "TIFF";
-    public static final String DERIVATIVE = "Derivative";
+    //public static final String MASTER = "Master";
+    //public static final String TIFF = "TIFF";
+    //public static final String DERIVATIVE = "Derivative";
 
     private JTextField txtSource;
     private JTextField txtTarget;
@@ -158,7 +158,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         //checkbox:
 
-        masterButton = new JCheckBox(MASTER);
+/*        masterButton = new JCheckBox(MASTER);
         masterButton.setMnemonic(KeyEvent.VK_B);
         masterButton.setActionCommand(MASTER);
         masterButton.setSelected(true);
@@ -170,7 +170,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         JPanel checkboxPanel = new JPanel(new GridLayout(0, 1));
         checkboxPanel.add(masterButton);
-        checkboxPanel.add(derivativeButton);
+        checkboxPanel.add(derivativeButton); */
 
         // End: checkbox
 
@@ -230,7 +230,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         panInput.add(panInputLabels, BorderLayout.LINE_START);
         panInput.add(panInputFields, BorderLayout.CENTER);
-        panInput.add(checkboxPanel, BorderLayout.SOUTH);
+        //panInput.add(checkboxPanel, BorderLayout.SOUTH);
         panIds.add(scrollPane2, BorderLayout.CENTER);
         panProgress.add(panProgressLabels, BorderLayout.LINE_START);
         panProgress.add(panProgressBars, BorderLayout.CENTER);
