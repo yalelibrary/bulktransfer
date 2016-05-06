@@ -1,3 +1,5 @@
+package yale;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,8 +20,11 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultCaret;
+import javax.jnlp.*;
 
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
+    static BasicService basicService = null;
+
     private static final long serialVersionUID = 1L;
     public static final String DONE = "OK\n";
     //public static final String MASTER = "Master";
@@ -314,12 +319,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public Void doInBackground() throws Exception {
-            txtDetails.append(". . . . . \n");
+            txtDetails.append("\n");
             retrieveTotalBytes(source);
-            txtDetails.append(DONE);
+            //txtDetails.append(DONE);
 
             copyFiles(source, target);
-            txtDetails.append("OK\n");
+            txtDetails.append("\nOK\n");
             return null;
         }
 
@@ -367,13 +372,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     copyFiles(srcFile, destFile);
                 }
             } else {
+                //txtDetails.append("Selected master:" + masterButton.isSelected() + "\n");
+                //txtDetails.append("Selected derivative:" + derivativeButton.isSelected() + "\n");
+                //txtDetails.append("Selected identifiers:" + txtIdentifiers.getText() + "\n");
 
-
-                txtDetails.append("Selected master:" + masterButton.isSelected() + "\n");
-                txtDetails.append("Selected derivative:" + derivativeButton.isSelected() + "\n");
-                txtDetails.append("Selected identifiers:" + txtIdentifiers.getText() + "\n");
-
-                txtDetails.append("Copying " + sourceFile.getAbsolutePath() + " ... ");
+                txtDetails.append("Copying " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
@@ -433,7 +436,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, "BRBL Tiff Finder");
+            JOptionPane.showMessageDialog(null, "BRBL File Transfer Utility");
         }
     }
 
@@ -470,7 +473,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, "Instructions (Mac): \n\n sudo mount -t smbfs //DOMAIN\\;netid@url/share dir \n sudo java -cp . FileCopy \n\n" +
+            JOptionPane.showMessageDialog(null, "Instructions (Mac): \n\n sudo mount -t smbfs //DOMAIN\\;netid@url/share dir \n sudo java -cp . yale.FileCopy \n\n" +
                     "Instructions (Cent OS) \n sudo /sbin/mount.cifs //url/share dir -o user=netid, domain=");
         }
     }
