@@ -27,9 +27,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private static final long serialVersionUID = 1L;
     public static final String DONE = "OK\n";
-    //public static final String MASTER = "Master";
-    //public static final String TIFF = "TIFF";
-    //public static final String DERIVATIVE = "Derivative";
 
     private JTextField txtSource;
     private JTextField txtTarget;
@@ -42,9 +39,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private JPopupMenu popup;
     String source = "";
     String target = "";
-    JCheckBox masterButton;
-    JCheckBox derivativeButton;
-
 
     public FileCopy() {
         buildGUI();
@@ -161,24 +155,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         caret2.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         JScrollPane scrollPane2 = new JScrollPane(txtIdentifiers);
 
-        //checkbox:
-
-/*        masterButton = new JCheckBox(MASTER);
-        masterButton.setMnemonic(KeyEvent.VK_B);
-        masterButton.setActionCommand(MASTER);
-        masterButton.setSelected(true);
-
-        derivativeButton = new JCheckBox(DERIVATIVE);
-        derivativeButton.setMnemonic(KeyEvent.VK_B);
-        derivativeButton.setActionCommand(DERIVATIVE);
-        derivativeButton.setSelected(true);
-
-        JPanel checkboxPanel = new JPanel(new GridLayout(0, 1));
-        checkboxPanel.add(masterButton);
-        checkboxPanel.add(derivativeButton); */
-
-        // End: checkbox
-
         btnCopy = new JButton("Copy");
         btnCopy.setFocusPainted(false);
         btnCopy.setEnabled(false);
@@ -235,7 +211,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         panInput.add(panInputLabels, BorderLayout.LINE_START);
         panInput.add(panInputFields, BorderLayout.CENTER);
-        //panInput.add(checkboxPanel, BorderLayout.SOUTH);
         panIds.add(scrollPane2, BorderLayout.CENTER);
         panProgress.add(panProgressLabels, BorderLayout.LINE_START);
         panProgress.add(panProgressBars, BorderLayout.CENTER);
@@ -246,7 +221,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         JPanel panUpper = new JPanel(new BorderLayout());
         panUpper.add(buttonsPanel, BorderLayout.NORTH);
         panUpper.add(panInput, BorderLayout.CENTER);
-        //panUpper.add(panProgress, BorderLayout.SOUTH);
 
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         contentPane.add(panUpper, BorderLayout.NORTH);
@@ -303,6 +277,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         });
     }
 
+    /**
+     * Actual copying
+     */
     class CopyTask extends SwingWorker<Void, Integer> {
         private File source;
         private File target;
@@ -321,8 +298,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         public Void doInBackground() throws Exception {
             txtDetails.append("\n");
             retrieveTotalBytes(source);
-            //txtDetails.append(DONE);
-
             copyFiles(source, target);
             txtDetails.append("\nOK\n");
             return null;
@@ -343,9 +318,18 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private void retrieveTotalBytes(File sourceFile) {
             File[] files = sourceFile.listFiles();
+
+            if (files == null) {
+                return;
+            }
+
             for (File file : files) {
-                if (file.isDirectory()) retrieveTotalBytes(file);
-                else totalBytes += file.length();
+                if (file.isDirectory()) {
+                    retrieveTotalBytes(file);
+                }
+                else {
+                    totalBytes += file.length();
+                }
             }
         }
 
@@ -353,7 +337,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             if (sourceFile.isDirectory()) {
 
 
-                if (!targetFile.exists()) targetFile.mkdirs();
+                if (!targetFile.exists()) {
+                    boolean success = targetFile.mkdirs();
+                    System.out.println("Target file created: " + success);
+                }
 
                 String[] filePaths = sourceFile.list();
 
@@ -372,16 +359,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     copyFiles(srcFile, destFile);
                 }
             } else {
-                //txtDetails.append("Selected master:" + masterButton.isSelected() + "\n");
-                //txtDetails.append("Selected derivative:" + derivativeButton.isSelected() + "\n");
-                //txtDetails.append("Selected identifiers:" + txtIdentifiers.getText() + "\n");
-
                 txtDetails.append("Copying " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
-                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
+                final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
+                final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
 
-                long fileBytes = sourceFile.length();
+                final long fileBytes = sourceFile.length();
                 long soFar = 0L;
 
                 int theByte;
@@ -397,8 +380,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 bos.close();
 
                 publish(100);
-
-                //txtDetails.append("OK\n");
             }
         }
     }
@@ -475,16 +456,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         public void actionPerformed(ActionEvent e) {
             JOptionPane.showMessageDialog(null, "Instructions (Mac): \n\n sudo mount -t smbfs //DOMAIN\\;netid@url/share dir \n sudo java -cp . yale.FileCopy \n\n" +
                     "Instructions (Cent OS) \n sudo /sbin/mount.cifs //url/share dir -o user=netid, domain=");
-        }
-    }
-
-
-    /**
-     * For Radio buttons
-     */
-    private class RadioListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            JRadioButton button = (JRadioButton) e.getSource();
         }
     }
 
