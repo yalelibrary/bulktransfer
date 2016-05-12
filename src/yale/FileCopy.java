@@ -14,6 +14,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -254,10 +257,16 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 return;
             }
 
-            if (!target.exists() && source.isDirectory()) target.mkdirs();
+            if (!target.exists() && source.isDirectory()) {
+                target.mkdirs();
+            }
+
             else {
-                int option = JOptionPane.showConfirmDialog(this, "The target file/directory already exists, do you want to overwrite it?", "Overwrite the target", JOptionPane.YES_NO_OPTION);
-                if (option != JOptionPane.YES_OPTION) return;
+                //int option = JOptionPane.showConfirmDialog(this, "The target file/directory already exists, do you want to overwrite it?", "Overwrite the target", JOptionPane.YES_NO_OPTION);
+                //if (option != JOptionPane.YES_OPTION)
+                    //return;
+                JOptionPane.showMessageDialog(this, "The target file/directory already exists!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
             task = this.new CopyTask(source, target);
@@ -316,10 +325,16 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         public Void doInBackground() throws Exception {
             detailsBox.append("\n");
             retrieveTotalBytes(source); // used to calculate progress
+
             try {
+                if (suspiciousTarget(target.getAbsolutePath())) {
+                    System.out.println("Found suspicious target folder");
+                    detailsBox.append("Forbidden target folder");
+                    return null;
+                }
                 gather(source, target);
                 copyFiles();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 detailsBox.append("\n Error in copying one or more files: \n");
                 detailsBox.append(e.getCause().toString());
@@ -467,6 +482,26 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     }
 
 
+    // This is a redundant check
+    //TODO automate list
+    private boolean suspiciousTarget(final String filename) {
+
+        System.out.println("Checking for suspicious filename:" + filename);
+
+        if (filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")) {
+            return true;
+        }
+
+        if (filename.contains("Volume")) {
+            return true;
+        }
+
+        if (filename.contains("ladybird")) {
+            return true;
+        }
+
+        return false;
+    }
 
 
 }
