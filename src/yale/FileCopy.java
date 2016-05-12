@@ -37,7 +37,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private JTextField txtSource;
     private JTextField txtTarget;
     private JProgressBar progressAll;
-    private JProgressBar progressCurrent;
+    //private JProgressBar progressCurrent;
     private JTextArea detailsBox;
     private JTextArea txtIdentifiers;
     private JButton btnCopy;
@@ -143,12 +143,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         buttonsPanel.add(selectSourceButton, BorderLayout.WEST);
         buttonsPanel.add(selectTargetButton, BorderLayout.EAST);
 
-        JLabel lblProgressAll = new JLabel("Overall: ");
-        JLabel lblProgressCurrent = new JLabel("Current File: ");
+        JLabel lblProgressAll = new JLabel("Progress: ");
+        //JLabel lblProgressCurrent = new JLabel("Current File: ");
         progressAll = new JProgressBar(0, 100);
         progressAll.setStringPainted(true);
-        progressCurrent = new JProgressBar(0, 100);
-        progressCurrent.setStringPainted(true);
+        //progressCurrent = new JProgressBar(0, 100);
+        //progressCurrent.setStringPainted(true);
         detailsBox = new JTextArea(5, 50);
         detailsBox.setEditable(false);
         DefaultCaret caret = (DefaultCaret) detailsBox.getCaret();
@@ -201,15 +201,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInputFields.add(txtSource, BorderLayout.NORTH);
         panInputFields.add(txtTarget, BorderLayout.CENTER);
         panProgressLabels.add(lblProgressAll, BorderLayout.NORTH);
-        panProgressLabels.add(lblProgressCurrent, BorderLayout.CENTER);
+        //panProgressLabels.add(lblProgressCurrent, BorderLayout.CENTER);
         panProgressBars.add(progressAll, BorderLayout.NORTH);
-        panProgressBars.add(progressCurrent, BorderLayout.CENTER);
+        //panProgressBars.add(progressCurrent, BorderLayout.CENTER);
 
         JPanel panInput = new JPanel(new BorderLayout(0, 5));
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panProgress = new JPanel(new BorderLayout(0, 5));
-        panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"),
+        panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Stats"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         final JPanel infoPanel = new JPanel(new BorderLayout());
         infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"),
@@ -309,7 +309,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             this.source = source;
             this.target = target;
             progressAll.setValue(0);
-            progressCurrent.setValue(0);
+            //progressCurrent.setValue(0);
         }
 
         @Override
@@ -331,7 +331,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         @Override
         public void process(List<Integer> chunks) {
             for (int i : chunks) {
-                progressCurrent.setValue(i);
+                //progressCurrent.setValue(i);
             }
         }
 
@@ -416,56 +416,58 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 filesTocopy.put(sourceFile, targetFile);
             }
         }
+
+        private class DownloadTask implements Runnable {
+
+            private File name;
+            private final File toPath;
+
+            public DownloadTask(File name, File toPath) {
+                this.name = name;
+                this.toPath = toPath;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    fileCopy(name, toPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void fileCopy(final File sourceFile, final File targetFile) throws IOException{
+                detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
+
+                System.out.println("Copying file:" + sourceFile.getAbsolutePath());
+
+                final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
+                final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
+
+                final long fileBytes = sourceFile.length();
+                long soFar = 0L;
+
+                int readByte;
+
+                while ((readByte = bis.read()) != -1) {
+                    bos.write(readByte);
+
+                    setProgress((int) (copiedBytes++ * 100 / totalBytes));
+                    //publish((int) (soFar++ * 100 / fileBytes));
+                }
+
+                bis.close();
+                bos.close();
+
+                //publish(100);
+
+                System.out.println("Done with file:" + sourceFile.getAbsolutePath());
+            }
+        }
     }
 
 
-    private static class DownloadTask implements Runnable {
 
-        private File name;
-        private final File toPath;
-
-        public DownloadTask(File name, File toPath) {
-            this.name = name;
-            this.toPath = toPath;
-        }
-
-        @Override
-        public void run() {
-            try {
-                fileCopy(name, toPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private void fileCopy(final File sourceFile, final File targetFile) throws IOException{
-            //detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
-
-            System.out.println("Copying file:" + sourceFile.getAbsolutePath());
-
-            final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
-            final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
-
-            final long fileBytes = sourceFile.length();
-            long soFar = 0L;
-
-            int readByte;
-
-            while ((readByte = bis.read()) != -1) {
-                bos.write(readByte);
-
-                //setProgress((int) (copiedBytes++ * 100 / totalBytes));
-                //publish((int) (soFar++ * 100 / fileBytes));
-            }
-
-            bis.close();
-            bos.close();
-
-            //publish(100);
-
-            System.out.println("Done with file:" + sourceFile.getAbsolutePath());
-        }
-    }
 
 }
 
