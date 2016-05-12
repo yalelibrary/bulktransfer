@@ -32,7 +32,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private JTextField txtTarget;
     private JProgressBar progressAll;
     private JProgressBar progressCurrent;
-    private JTextArea txtDetails;
+    private JTextArea detailsBox;
     private JTextArea txtIdentifiers;
     private JButton btnCopy;
     private CopyTask task;
@@ -143,11 +143,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         progressAll.setStringPainted(true);
         progressCurrent = new JProgressBar(0, 100);
         progressCurrent.setStringPainted(true);
-        txtDetails = new JTextArea(5, 50);
-        txtDetails.setEditable(false);
-        DefaultCaret caret = (DefaultCaret) txtDetails.getCaret();
+        detailsBox = new JTextArea(5, 50);
+        detailsBox.setEditable(false);
+        DefaultCaret caret = (DefaultCaret) detailsBox.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        JScrollPane scrollPane = new JScrollPane(txtDetails, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scrollPane = new JScrollPane(detailsBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         txtIdentifiers = new JTextArea(5, 50);
         txtIdentifiers.setEditable(true);
@@ -296,10 +296,16 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         @Override
         public Void doInBackground() throws Exception {
-            txtDetails.append("\n");
+            detailsBox.append("\n");
             retrieveTotalBytes(source);
-            copyFiles(source, target);
-            txtDetails.append("\nOK\n");
+            try {
+                copy(source, target);
+            } catch (IOException e) {
+                e.printStackTrace();
+                detailsBox.append("\n Error \n");
+                //detailsBox.append(e.getSta
+            }
+            detailsBox.append("\nOK\n");
             return null;
         }
 
@@ -316,14 +322,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             btnCopy.setText("Copy");
         }
 
-        private void retrieveTotalBytes(File sourceFile) {
-            File[] files = sourceFile.listFiles();
+        private void retrieveTotalBytes(final File sourceFile) {
+            final File[] files = sourceFile.listFiles();
 
             if (files == null) {
                 return;
             }
 
-            for (File file : files) {
+            for (final File file : files) {
                 if (file.isDirectory()) {
                     retrieveTotalBytes(file);
                 }
@@ -333,7 +339,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        private void copyFiles(File sourceFile, File targetFile) throws IOException {
+        private void copy(File sourceFile, File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
 
 
@@ -352,14 +358,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                         if (srcFile.getName().equals(txtIdentifiers.getText())) {
                             System.out.println("Matched directory identifier");
                         } else {
-                            txtDetails.append("Skipped:" + srcFile.getName() + "\n");
+                            detailsBox.append("Skipped:" + srcFile.getName() + "\n");
                             return;
                         }
                     }
-                    copyFiles(srcFile, destFile);
+                    copy(srcFile, destFile);
                 }
             } else {
-                txtDetails.append("Copying " + sourceFile.getAbsolutePath() + " ... " + "\n");
+                detailsBox.append("Copying " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
                 final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
