@@ -339,7 +339,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        private void copy(File sourceFile, File targetFile) throws IOException {
+        private void copy(final File sourceFile, final File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
 
 
@@ -348,11 +348,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     System.out.println("Target file created: " + success);
                 }
 
-                String[] filePaths = sourceFile.list();
+                final String[] filePaths = sourceFile.list();
 
-                for (String filePath : filePaths) {
-                    File srcFile = new File(sourceFile, filePath);
-                    File destFile = new File(targetFile, filePath);
+                for (final String filePath : filePaths) {
+                    final File srcFile = new File(sourceFile, filePath);
+                    final File destFile = new File(targetFile, filePath);
 
                     if (srcFile.isDirectory()) {
                         if (srcFile.getName().equals(txtIdentifiers.getText())) {
@@ -364,7 +364,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     }
                     copy(srcFile, destFile);
                 }
-            } else {
+            } else if (sourceFile.isDirectory() == false) {
                 detailsBox.append("Copying " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
@@ -373,10 +373,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 final long fileBytes = sourceFile.length();
                 long soFar = 0L;
 
-                int theByte;
+                int readByte;
 
-                while ((theByte = bis.read()) != -1) {
-                    bos.write(theByte);
+                while ((readByte = bis.read()) != -1) {
+                    bos.write(readByte);
 
                     setProgress((int) (copiedBytes++ * 100 / totalBytes));
                     publish((int) (soFar++ * 100 / fileBytes));
@@ -390,6 +390,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
     }
 
+    /**
+     * About Menu Helper
+     */
     class AboutDialogAction implements Action {
         @Override
         public Object getValue(String key) {
@@ -427,6 +430,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
     }
 
+    /**
+     * Help menu helper
+     */
     class HelpAction implements Action {
         @Override
         public Object getValue(String key) {
