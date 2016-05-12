@@ -351,14 +351,18 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 pool.submit(new DownloadTask(source, target));
             }
 
-            System.out.println("Done with the pool");
+            System.out.println("Done populating the pool");
             pool.shutdown();
+
             try {
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                System.out.println("Pool termination file complete");
+                System.out.println("Pool termination complete");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            filesTocopy.clear();
+            filesTocopy = new HashMap<File, File>();
         }
 
         /**
