@@ -74,7 +74,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         final JMenuItem menuItem = new JMenuItem("About",
                 KeyEvent.VK_T);
         //menuItem.setAccelerator(KeyStroke.getKeyStroke(
-               // KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        // KeyEvent.VK_1, ActionEvent.ALT_MASK));
         menuItem.addActionListener(new AboutDialogAction());
         menu.add(menuItem);
 
@@ -83,7 +83,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         final JMenuItem menuItem2 = new JMenuItem("Help",
                 KeyEvent.VK_H);
         //menuItem2.setAccelerator(KeyStroke.getKeyStroke(
-                //KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        //KeyEvent.VK_1, ActionEvent.ALT_MASK));
         menuItem2.addActionListener(new HelpAction());
         menu.add(menuItem2);
 
@@ -147,7 +147,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         detailsBox.setEditable(false);
         DefaultCaret caret = (DefaultCaret) detailsBox.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        JScrollPane scrollPane = new JScrollPane(detailsBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scrollPane = new JScrollPane(detailsBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         txtIdentifiers = new JTextArea(5, 50);
         txtIdentifiers.setEditable(true);
@@ -199,13 +200,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panProgressBars.add(progressCurrent, BorderLayout.CENTER);
 
         JPanel panInput = new JPanel(new BorderLayout(0, 5));
-        panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panProgress = new JPanel(new BorderLayout(0, 5));
-        panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         final JPanel infoPanel = new JPanel(new BorderLayout());
-        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         final JPanel panIds = new JPanel(new BorderLayout());
-        panIds.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Identifiers"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        panIds.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Identifiers"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         JPanel panControls = new JPanel(new BorderLayout());
         panControls.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
@@ -279,17 +284,22 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     /**
      * Actual copying
+     * <p/>
+     * TODO could print number of files and total download size
      */
     class CopyTask extends SwingWorker<Void, Integer> {
         private File source;
         private File target;
+
+        /**
+         * Progress indicators
+         */
         private long totalBytes = 0L;
         private long copiedBytes = 0L;
 
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
-
             progressAll.setValue(0);
             progressCurrent.setValue(0);
         }
@@ -297,13 +307,13 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         @Override
         public Void doInBackground() throws Exception {
             detailsBox.append("\n");
-            retrieveTotalBytes(source);
+            retrieveTotalBytes(source); // used to calculate progress
             try {
                 copy(source, target);
             } catch (IOException e) {
                 e.printStackTrace();
-                detailsBox.append("\n Error \n");
-                //detailsBox.append(e.getSta
+                detailsBox.append("\n Error in copying one or more files: \n");
+                detailsBox.append(e.getCause().toString());
             }
             detailsBox.append("\nOK\n");
             return null;
@@ -322,6 +332,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             btnCopy.setText("Copy");
         }
 
+        /**
+         * Computes total number of bytes
+         *
+         * @param sourceFile
+         */
         private void retrieveTotalBytes(final File sourceFile) {
             final File[] files = sourceFile.listFiles();
 
@@ -332,16 +347,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             for (final File file : files) {
                 if (file.isDirectory()) {
                     retrieveTotalBytes(file);
-                }
-                else {
+                } else {
                     totalBytes += file.length();
                 }
             }
         }
 
+        // Actual copying
         private void copy(final File sourceFile, final File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
-
 
                 if (!targetFile.exists()) {
                     boolean success = targetFile.mkdirs();
@@ -364,8 +378,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     }
                     copy(srcFile, destFile);
                 }
-            } else if (sourceFile.isDirectory() == false) {
-                detailsBox.append("Copying " + sourceFile.getAbsolutePath() + " ... " + "\n");
+            } else { // a file
+                detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
                 final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
@@ -389,6 +403,28 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
     }
+
+    /*
+    private static class DownloadTask implements Runnable {
+
+        private String name;
+        private final String toPath;
+
+        public DownloadTask(String name, String toPath) {
+            this.name = name;
+            this.toPath = toPath;
+        }
+
+        @Override
+        public void run() {
+            try {
+                downloadFile(name, toPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    } */
+
 
 }
 
