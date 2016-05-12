@@ -14,7 +14,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -297,6 +303,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         private long totalBytes = 0L;
         private long copiedBytes = 0L;
 
+        private Map<File, File> filesTocopy = new HashMap<File, File>();
+
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
@@ -309,7 +317,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             detailsBox.append("\n");
             retrieveTotalBytes(source); // used to calculate progress
             try {
-                copy(source, target);
+                gather(source, target);
+                copyFiles();
             } catch (IOException e) {
                 e.printStackTrace();
                 detailsBox.append("\n Error in copying one or more files: \n");
@@ -332,10 +341,28 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             btnCopy.setText("Copy");
         }
 
+
+        // Copy files from map
+        private void copyFiles() {
+            final ExecutorService pool = Executors.newFixedThreadPool(10);
+            final Set<File> files = filesTocopy.keySet();
+            for (File source : files) {
+                final File target = filesTocopy.get(source);
+                pool.submit(new DownloadTask(source, target));
+            }
+
+            System.out.println("Done with the pool");
+            pool.shutdown();
+            try {
+                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+                System.out.println("Pool termination file complete");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         /**
-         * Computes total number of bytes
-         *
-         * @param sourceFile
+         * Computes total number of bytes         *
          */
         private void retrieveTotalBytes(final File sourceFile) {
             final File[] files = sourceFile.listFiles();
@@ -353,8 +380,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        // Actual copying
-        private void copy(final File sourceFile, final File targetFile) throws IOException {
+        /**
+         * Makes directories and appends to pool
+         */
+        private void gather(final File sourceFile, final File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
 
                 if (!targetFile.exists()) {
@@ -368,49 +397,30 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     final File srcFile = new File(sourceFile, filePath);
                     final File destFile = new File(targetFile, filePath);
 
-                    if (srcFile.isDirectory()) {
+                    /*if (srcFile.isDirectory()) {
                         if (srcFile.getName().equals(txtIdentifiers.getText())) {
                             System.out.println("Matched directory identifier");
                         } else {
                             detailsBox.append("Skipped:" + srcFile.getName() + "\n");
                             return;
                         }
-                    }
-                    copy(srcFile, destFile);
+                    } */
+
+                    gather(srcFile, destFile);
                 }
-            } else { // a file
-                detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
-
-                final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
-                final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
-
-                final long fileBytes = sourceFile.length();
-                long soFar = 0L;
-
-                int readByte;
-
-                while ((readByte = bis.read()) != -1) {
-                    bos.write(readByte);
-
-                    setProgress((int) (copiedBytes++ * 100 / totalBytes));
-                    publish((int) (soFar++ * 100 / fileBytes));
-                }
-
-                bis.close();
-                bos.close();
-
-                publish(100);
+            } else { // add file object to map for later retreival
+                filesTocopy.put(sourceFile, targetFile);
             }
         }
     }
 
-    /*
+
     private static class DownloadTask implements Runnable {
 
-        private String name;
-        private final String toPath;
+        private File name;
+        private final File toPath;
 
-        public DownloadTask(String name, String toPath) {
+        public DownloadTask(File name, File toPath) {
             this.name = name;
             this.toPath = toPath;
         }
@@ -418,13 +428,40 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         @Override
         public void run() {
             try {
-                downloadFile(name, toPath);
+                fileCopy(name, toPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    } */
 
+        private void fileCopy(final File sourceFile, final File targetFile) throws IOException{
+            //detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
+
+            System.out.println("Copying file:" + sourceFile.getAbsolutePath());
+
+            final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
+            final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
+
+            final long fileBytes = sourceFile.length();
+            long soFar = 0L;
+
+            int readByte;
+
+            while ((readByte = bis.read()) != -1) {
+                bos.write(readByte);
+
+                //setProgress((int) (copiedBytes++ * 100 / totalBytes));
+                //publish((int) (soFar++ * 100 / fileBytes));
+            }
+
+            bis.close();
+            bos.close();
+
+            //publish(100);
+
+            System.out.println("Done with file:" + sourceFile.getAbsolutePath());
+        }
+    }
 
 }
 
