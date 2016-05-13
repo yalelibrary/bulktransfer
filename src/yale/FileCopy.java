@@ -23,6 +23,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -48,11 +53,28 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     String source = "";
     String target = "";
 
+
+    private static Logger logger = Logger.getLogger("yale.FileCopy");
+
+    private static Handler fh;
+
     public FileCopy() {
         buildGUI();
     }
 
     private void buildGUI() {
+
+        try {
+            fh = new FileHandler("test.log");
+            fh.setFormatter(new SimpleFormatter());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        logger.addHandler(fh);
+        logger.setLevel(Level.ALL);
+        logger.info("Initiated GUI");
+
         setTitle("BRBL File Transfer Utility");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -248,6 +270,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         pack();
         setLocationRelativeTo(null);
+
+
+
+        Logger.getLogger("com.wombat").setLevel(Level.FINEST);
     }
 
     @Override
@@ -320,6 +346,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private List<String> identifiers = new ArrayList<String>();
 
+
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
@@ -331,6 +358,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
          */
         @Override
         public Void doInBackground() throws Exception {
+            logger.info("Started background task");
             detailsBox.append("\n");
             retrieveTotalBytes(source); // used to calculate progress
 
