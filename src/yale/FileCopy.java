@@ -14,9 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +113,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         JButton selectSourceButton = new JButton("Browse Source Folder");
         selectSourceButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                JFileChooser fileChooser = new JFileChooser();
+                JFileChooser fileChooser = new JFileChooser(new File("\\storage.yale.edu\\home\\ladybird-801001-yul\\ladybird2"));
+                fileChooser.setCurrentDirectory(new File("\\storage.yale.edu\\home\\ladybird-801001-yul\\ladybird2"));
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 int returnValue = fileChooser.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
@@ -303,24 +303,28 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
      * TODO could print number of files and total download size
      */
     class CopyTask extends SwingWorker<Void, Integer> {
+
         private File source;
+
         private File target;
 
-        /**
-         * Progress indicators
-         */
         private long totalBytes = 0L;
+
         private long copiedBytes = 0L;
 
-        private Map<File, File> filesTocopy = new HashMap<File, File>();
+        private Map<File, File> filesToCopy = new HashMap<File, File>();
+
+        private List<String> identifiers = new ArrayList<String>();
 
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
             progressAll.setValue(0);
-            //progressCurrent.setValue(0);
         }
 
+        /**
+         * Main method
+         */
         @Override
         public Void doInBackground() throws Exception {
             detailsBox.append("\n");
@@ -332,7 +336,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     detailsBox.append("Forbidden target folder");
                     return null;
                 }
+
+
+                String s[] = txtIdentifiers.getText().split("\\r?\\n");
+                identifiers = new ArrayList<String>(Arrays.asList(s)) ;
+
+                for (String str : identifiers) {
+                    System.out.println("Identifier of interest:" + str);
+                }
+
                 gather(source, target);
+
                 copyFiles();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -344,25 +358,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
 
         @Override
-        public void process(List<Integer> chunks) {
-            for (int i : chunks) {
-                //progressCurrent.setValue(i);
-            }
-        }
-
-        @Override
         public void done() {
             setProgress(100);
             btnCopy.setText("Copy");
         }
 
-
-        // Copy files from map
+        // Copy files stored in java.util.Map
         private void copyFiles() {
             final ExecutorService pool = Executors.newFixedThreadPool(10);
-            final Set<File> files = filesTocopy.keySet();
+            final Set<File> files = filesToCopy.keySet();
             for (File source : files) {
-                final File target = filesTocopy.get(source);
+                final File target = filesToCopy.get(source);
                 pool.submit(new DownloadTask(source, target));
             }
 
@@ -371,17 +377,19 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             try {
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                System.out.println("Pool termination complete");
+                System.out.println("Pool termination complete.");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            filesTocopy.clear();
-            filesTocopy = new HashMap<File, File>();
+            filesToCopy.clear();
+            filesToCopy = new HashMap<File, File>();
+            identifiers = new ArrayList<String>();
         }
 
         /**
-         * Computes total number of bytes         *
+         * Computes total number of bytes
+         * Possibly time intensive for large directories
          */
         private void retrieveTotalBytes(final File sourceFile) {
             final File[] files = sourceFile.listFiles();
@@ -400,38 +408,71 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
 
         /**
-         * Makes directories and appends to pool
+         * Makes directories (if necessary) and populates a map (for later retrieval)
          */
         private void gather(final File sourceFile, final File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
 
                 if (!targetFile.exists()) {
                     boolean success = targetFile.mkdirs();
-                    System.out.println("Target file created: " + success);
+                    System.out.println("Directory created?: " + success);
                 }
 
-                final String[] filePaths = sourceFile.list();
+                final String[] paths = sourceFile.list();
 
-                for (final String filePath : filePaths) {
-                    final File srcFile = new File(sourceFile, filePath);
-                    final File destFile = new File(targetFile, filePath);
+                for (final String filePath : paths) {
 
-                    /*if (srcFile.isDirectory()) {
-                        if (srcFile.getName().equals(txtIdentifiers.getText())) {
-                            System.out.println("Matched directory identifier");
+                    final File src = new File(sourceFile, filePath);
+                    final File dest = new File(targetFile, filePath);
+
+                    if (src.isDirectory()) {
+
+                        System.out.println("Checking dir:" + src.getAbsolutePath());
+
+                        if (!browse(src)) {
+                            detailsBox.append("Skipped:" + src.getName() + "\n");
+                            continue;  //skip if we don't want to browse the folder
                         } else {
-                            detailsBox.append("Skipped:" + srcFile.getName() + "\n");
-                            return;
+                            System.out.println("Found browseable. Will gather from:" + src.getAbsolutePath());
                         }
-                    } */
+                    }
 
-                    gather(srcFile, destFile);
+                    System.out.println("Will gather from:" + src.getAbsolutePath());
+                    gather(src, dest);
                 }
-            } else { // add file object to map for later retreival
-                filesTocopy.put(sourceFile, targetFile);
+            } else { // add file object to map for later multithreaded retrieval
+                filesToCopy.put(sourceFile, targetFile);
             }
         }
 
+        /**
+         * Decides whether to download a folder or not. A type of a filter, hence
+         * should be replaced by a FileFilter
+         */
+        private boolean browse(final File dir) {
+
+            for (final String s : identifiers) {
+                if (s.isEmpty()) {
+                    continue;
+                }
+
+                if (dir.getAbsolutePath().contains(s)) {
+                    return true;
+                }
+
+                // if in pattern 22-444, get range
+
+                if (s.contains("-")) {
+
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Copying of one file (not folder)
+         */
         private class DownloadTask implements Runnable {
 
             private File name;
@@ -453,8 +494,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             private void fileCopy(final File sourceFile, final File targetFile) throws IOException{
                 detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
-
-                System.out.println("Copying file:" + sourceFile.getAbsolutePath());
+                //System.out.println("Copying file:" + sourceFile.getAbsolutePath());
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
                 final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
@@ -482,8 +522,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     }
 
 
-    // This is a redundant check
-    //TODO automate list
+    // Filters file names
     private boolean suspiciousTarget(final String filename) {
 
         System.out.println("Checking for suspicious filename:" + filename);
@@ -502,7 +541,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         return false;
     }
-
 
 }
 
