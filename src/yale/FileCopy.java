@@ -153,6 +153,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         //progressCurrent = new JProgressBar(0, 100);
         //progressCurrent.setStringPainted(true);
         detailsBox = new JTextArea(5, 50);
+
+        Color c = Color.LIGHT_GRAY;
+        detailsBox.setBackground(c);
+
         detailsBox.setEditable(false);
         DefaultCaret caret = (DefaultCaret) detailsBox.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
