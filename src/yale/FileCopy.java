@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -14,8 +15,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +40,38 @@ import javax.swing.text.DefaultCaret;
 import javax.jnlp.*;
 
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
+
     static BasicService basicService = null;
 
     private static final long serialVersionUID = 1L;
+
     public static final String DONE = "OK\n";
 
     private JTextField txtSource;
+
+    private static Handler fh;
+
+    /**
+     * Cleans any state. TODO check nothing is missed.
+     */
+    @Override
+    public synchronized void addWindowListener(final WindowListener l) {
+        super.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(final WindowEvent windowEvent) {
+                try {
+                    if (fh != null) {
+                        fh.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                System.exit(0);
+            }
+        });
+    }
+
     private JTextField txtTarget;
     private JProgressBar progressAll;
     //private JProgressBar progressCurrent;
@@ -56,7 +86,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private static Logger logger = Logger.getLogger("yale.FileCopy");
 
-    private static Handler fh;
 
     public FileCopy() {
         buildGUI();
@@ -64,8 +93,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private void buildGUI() {
 
+        // Build log file:
+
+        final Date date = Calendar.getInstance().getTime();
+        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss.SSSZ");
+        final String logfile = formatter.format(date);
+
         try {
-            fh = new FileHandler("test.log");
+            fh = new FileHandler("log-" + logfile);
             fh.setFormatter(new SimpleFormatter());
         } catch (IOException e) {
             e.printStackTrace();
@@ -270,10 +305,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         pack();
         setLocationRelativeTo(null);
-
-
-
-        Logger.getLogger("com.wombat").setLevel(Level.FINEST);
     }
 
     @Override
@@ -355,8 +386,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         /**
          * Main method
-         */
-        @Override
+         */        @Override
         public Void doInBackground() throws Exception {
             logger.info("Started background task");
             detailsBox.append("\n");
