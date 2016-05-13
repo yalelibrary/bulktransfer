@@ -41,51 +41,31 @@ import javax.jnlp.*;
 
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
 
+    private static Logger logger = Logger.getLogger("yale.FileCopy");
+
     static BasicService basicService = null;
 
     private static final long serialVersionUID = 1L;
-
-    public static final String DONE = "OK\n";
 
     private JTextField txtSource;
 
     private static Handler fh;
 
-    /**
-     * Cleans any state. TODO check nothing is missed.
-     */
-    @Override
-    public synchronized void addWindowListener(final WindowListener l) {
-        super.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(final WindowEvent windowEvent) {
-                try {
-                    if (fh != null) {
-                        fh.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                System.exit(0);
-            }
-        });
-    }
-
     private JTextField txtTarget;
+
     private JProgressBar progressAll;
-    //private JProgressBar progressCurrent;
+
     private JTextArea detailsBox;
+
     private JTextArea txtIdentifiers;
+
     private JButton btnCopy;
+
     private CopyTask task;
-    private JPopupMenu popup;
+
     String source = "";
+
     String target = "";
-
-
-    private static Logger logger = Logger.getLogger("yale.FileCopy");
-
 
     public FileCopy() {
         buildGUI();
@@ -100,10 +80,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         final String logfile = formatter.format(date);
 
         try {
-            fh = new FileHandler("log-" + logfile);
+            fh = new FileHandler("log-" + logfile + ".log");
             fh.setFormatter(new SimpleFormatter());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Internal error:", e);
         }
 
         logger.addHandler(fh);
@@ -111,6 +91,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         logger.info("Initiated GUI");
 
         setTitle("BRBL File Transfer Utility");
+
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
@@ -138,8 +119,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         // Create first menu item:
         final JMenuItem menuItem = new JMenuItem("About",
                 KeyEvent.VK_T);
-        //menuItem.setAccelerator(KeyStroke.getKeyStroke(
-        // KeyEvent.VK_1, ActionEvent.ALT_MASK));
         menuItem.addActionListener(new AboutDialogAction());
         menu.add(menuItem);
 
@@ -147,8 +126,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         // Create second menu item:
         final JMenuItem menuItem2 = new JMenuItem("Help",
                 KeyEvent.VK_H);
-        //menuItem2.setAccelerator(KeyStroke.getKeyStroke(
-        //KeyEvent.VK_1, ActionEvent.ALT_MASK));
         menuItem2.addActionListener(new HelpAction());
         menu.add(menuItem2);
 
@@ -167,48 +144,19 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         JPanel buttonsPanel = new JPanel();
 
         // Select source button
-        JButton selectSourceButton = new JButton("Browse Source Folder");
-        selectSourceButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                JFileChooser fileChooser = new JFileChooser(new File("\\storage.yale.edu\\home\\ladybird-801001-yul\\ladybird2"));
-                fileChooser.setCurrentDirectory(new File("\\storage.yale.edu\\home\\ladybird-801001-yul\\ladybird2"));
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                int returnValue = fileChooser.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = fileChooser.getSelectedFile();
-                    //System.out.println(selectedFile.getName());
-                    source = selectedFile.getAbsolutePath();
-                    txtSource.setText(source);
-
-                }
-            }
-        });
+        final JButton selectSourceButton = new JButton("Browse Source Folder");
+        selectSourceButton.addActionListener(getActListener1());
 
         // Select target button:
         JButton selectTargetButton = new JButton("Browse Target Folder");
-        selectTargetButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                int returnValue = fileChooser.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = fileChooser.getSelectedFile();
-                    //System.out.println(selectedFile.getName());
-                    target = selectedFile.getAbsolutePath();
-                    txtTarget.setText(target);
-                }
-            }
-        });
+        selectTargetButton.addActionListener(getActionListener2());
 
         buttonsPanel.add(selectSourceButton, BorderLayout.WEST);
         buttonsPanel.add(selectTargetButton, BorderLayout.EAST);
 
         JLabel lblProgressAll = new JLabel("Progress: ");
-        //JLabel lblProgressCurrent = new JLabel("Current File: ");
         progressAll = new JProgressBar(0, 100);
         progressAll.setStringPainted(true);
-        //progressCurrent = new JProgressBar(0, 100);
-        //progressCurrent.setStringPainted(true);
         detailsBox = new JTextArea(5, 50);
 
         Color c = Color.LIGHT_GRAY;
@@ -265,9 +213,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInputFields.add(txtSource, BorderLayout.NORTH);
         panInputFields.add(txtTarget, BorderLayout.CENTER);
         panProgressLabels.add(lblProgressAll, BorderLayout.NORTH);
-        //panProgressLabels.add(lblProgressCurrent, BorderLayout.CENTER);
         panProgressBars.add(progressAll, BorderLayout.NORTH);
-        //panProgressBars.add(progressCurrent, BorderLayout.CENTER);
 
         JPanel panInput = new JPanel(new BorderLayout(0, 5));
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
@@ -307,6 +253,62 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         setLocationRelativeTo(null);
     }
 
+    private ActionListener getActionListener2() {
+        return new ActionListener() {
+            public void actionPerformed(final ActionEvent ae) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int val = fileChooser.showOpenDialog(null);
+                if (val == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    target = selectedFile.getAbsolutePath();
+                    txtTarget.setText(target);
+                }
+            }
+        };
+    }
+
+    private ActionListener getActListener1() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                final JFileChooser chooser = new JFileChooser();
+                int x = 0;
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                final int returnValue = chooser.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    final File selectedFile = chooser.getSelectedFile();
+                    source = selectedFile.getAbsolutePath();
+                    txtSource.setText(source);
+
+                }
+            }
+        };
+    }
+
+    /**
+     * Cleans any state. .
+     */
+    @Override
+    public synchronized void addWindowListener(final WindowListener l) {
+        super.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(final WindowEvent windowEvent) {
+                try {
+                    if (fh != null) {
+                        fh.close();
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Internal error:", e);
+                }
+
+                //TODO check any missing steps that java.awt does
+
+                System.exit(0);
+            }
+        });
+    }
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if ("Copy".equals(btnCopy.getText())) {
@@ -314,19 +316,23 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             File target = new File(txtTarget.getText());
 
             if (!source.exists()) {
-                JOptionPane.showMessageDialog(this, "The source file/directory does not exist!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "The source file/directory does not exist!",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             if (!target.exists() && source.isDirectory()) {
-                target.mkdirs();
+                boolean op = target.mkdirs();
             }
 
-            else {
-                //int option = JOptionPane.showConfirmDialog(this, "The target file/directory already exists, do you want to overwrite it?", "Overwrite the target", JOptionPane.YES_NO_OPTION);
+            else { // customize as necessary
+                //int option = JOptionPane.showConfirmDialog(this,
+                // "The target file/directory already exists, do you want to overwrite it?",
+                // "Overwrite the target", JOptionPane.YES_NO_OPTION);
                 //if (option != JOptionPane.YES_OPTION)
                     //return;
-                JOptionPane.showMessageDialog(this, "The target file/directory already exists!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "The target file/directory already exists!", "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -360,8 +366,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     /**
      * Actual copying
-     * <p/>
-     * TODO could print number of files and total download size
      */
     class CopyTask extends SwingWorker<Void, Integer> {
 
@@ -377,7 +381,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private List<String> identifiers = new ArrayList<String>();
 
-
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
@@ -386,32 +389,28 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         /**
          * Main method
-         */        @Override
+         */
+        @Override
         public Void doInBackground() throws Exception {
             logger.info("Started background task");
             detailsBox.append("\n");
             retrieveTotalBytes(source); // used to calculate progress
 
+            logger.log(Level.INFO, "Total bytes:{0}", new Object[]{totalBytes});
+
             try {
                 if (suspiciousTarget(target.getAbsolutePath())) {
-                    System.out.println("Found suspicious target folder");
                     detailsBox.append("Forbidden target folder");
                     return null;
                 }
 
-
-                String s[] = txtIdentifiers.getText().split("\\r?\\n");
+                // filter in
+                final String s[] = txtIdentifiers.getText().split("\\r?\\n");
                 identifiers = new ArrayList<String>(Arrays.asList(s)) ;
-
-                for (String str : identifiers) {
-                    System.out.println("Identifier of interest:" + str);
-                }
-
                 gather(source, target);
-
                 copyFiles();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Internal error:", e);
                 detailsBox.append("\n Error in copying one or more files: \n");
                 detailsBox.append(e.getCause().toString());
             }
@@ -434,14 +433,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 pool.submit(new DownloadTask(source, target));
             }
 
-            System.out.println("Done populating the pool");
-            pool.shutdown();
+            pool.shutdown(); //TODO check. why is this shutdown here?
+            logger.info("Pool shutdown OK");
 
             try {
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                System.out.println("Pool termination complete.");
+               logger.info("Pool termination OK.");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Internal error:", e);
             }
 
             filesToCopy.clear();
@@ -477,29 +476,22 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                 if (!targetFile.exists()) {
                     boolean success = targetFile.mkdirs();
-                    System.out.println("Directory created?: " + success);
+                    logger.log(Level.INFO, "Dir created:{0}", new Object[]{success});
                 }
 
                 final String[] paths = sourceFile.list();
 
                 for (final String filePath : paths) {
-
                     final File src = new File(sourceFile, filePath);
                     final File dest = new File(targetFile, filePath);
 
                     if (src.isDirectory()) {
-
-                        System.out.println("Checking dir:" + src.getAbsolutePath());
-
                         if (!browse(src)) {
                             detailsBox.append("Skipped:" + src.getName() + "\n");
                             continue;  //skip if we don't want to browse the folder
-                        } else {
-                            System.out.println("Found browseable. Will gather from:" + src.getAbsolutePath());
                         }
                     }
 
-                    System.out.println("Will gather from:" + src.getAbsolutePath());
                     gather(src, dest);
                 }
             } else { // add file object to map for later multithreaded retrieval
@@ -514,18 +506,20 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         private boolean browse(final File dir) {
 
             for (final String s : identifiers) {
+
                 if (s.isEmpty()) {
                     continue;
                 }
 
-                if (dir.getAbsolutePath().contains(s)) {
+                if (dir.getAbsolutePath().contains(s)) { //TODO check
                     return true;
                 }
 
                 // if in pattern 22-444, get range
 
-                String dirName = dir.getName();
+                final String dirName = dir.getName();
 
+                //FIXME should not repeat the range for each
 
                 if (s.contains("-")) {
                     final String[] sp = s.split("-");
@@ -534,11 +528,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                     final String folderA = sp[0].replaceAll("[^\\d.]", "");
 
-                    int folderANum = Integer.parseInt(folderA);
+                    final int folderANum = Integer.parseInt(folderA);
 
                     final String folderB = sp[1].replaceAll("[^\\d.]", "");
 
-                    int folderBNum = Integer.parseInt(folderB);
+                    final int folderBNum = Integer.parseInt(folderB);
 
                     final String prefixA = sp[0].replace(sp[0], "");
 
@@ -546,12 +540,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                     if (prefixA.equals(prefixB) && dirName.startsWith(prefixA)) {
                         final String dirFolder = dirName.replaceAll("[^\\d.]", "");
-                        if (!dirFolder.isEmpty()) {
 
+                        if (!dirFolder.isEmpty()) {
                             final int dirFolderNum = Integer.parseInt(dirFolder);
 
                             if (dirFolderNum >= folderANum && dirFolderNum <= folderBNum) {
-                                System.out.println("Found range for dir:" + folderANum + ":" + folderBNum);
                                 return true;
                             }
                         }
@@ -579,44 +572,39 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 try {
                     fileCopy(name, toPath);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.log(Level.WARNING, "Error:", e);
                 }
             }
 
             private void fileCopy(final File sourceFile, final File targetFile) throws IOException{
-                detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
-                //System.out.println("Copying file:" + sourceFile.getAbsolutePath());
+                logger.log(Level.INFO, "Copying file:{0}", new Object[]{sourceFile.getAbsolutePath()});
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
                 final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
-
-                final long fileBytes = sourceFile.length();
-                long soFar = 0L;
-
                 int readByte;
+
+                detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 while ((readByte = bis.read()) != -1) {
                     bos.write(readByte);
-
                     setProgress((int) (copiedBytes++ * 100 / totalBytes));
-                    //publish((int) (soFar++ * 100 / fileBytes));
                 }
 
-                bis.close();
-                bos.close();
+                try {
+                    bis.close();
+                    bos.close();
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Internal error:", e);
 
-                //publish(100);
+                }
 
-                System.out.println("Done with file:" + sourceFile.getAbsolutePath());
+                logger.log(Level.INFO, "Copied file:{0}", new Object[]{sourceFile.getAbsolutePath()});
             }
         }
     }
 
-
-    // Filters file names
+    // TODO Filters file names
     private boolean suspiciousTarget(final String filename) {
-
-        System.out.println("Checking for suspicious filename:" + filename);
 
         if (filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")) {
             return true;
@@ -632,6 +620,5 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         return false;
     }
-
 }
 
