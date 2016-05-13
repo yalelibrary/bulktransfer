@@ -462,11 +462,40 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                 // if in pattern 22-444, get range
 
-                if (s.contains("-")) {
+                String dirName = dir.getName();
 
+
+                if (s.contains("-")) {
+                    final String[] sp = s.split("-");
+
+                    assert (sp.length == 2);  //TODO
+
+                    final String folderA = sp[0].replaceAll("[^\\d.]", "");
+
+                    int folderANum = Integer.parseInt(folderA);
+
+                    final String folderB = sp[1].replaceAll("[^\\d.]", "");
+
+                    int folderBNum = Integer.parseInt(folderB);
+
+                    final String prefixA = sp[0].replace(sp[0], "");
+
+                    final String prefixB = sp[1].replace(sp[1], "");
+
+                    if (prefixA.equals(prefixB) && dirName.startsWith(prefixA)) {
+                        final String dirFolder = dirName.replaceAll("[^\\d.]", "");
+                        if (!dirFolder.isEmpty()) {
+
+                            final int dirFolderNum = Integer.parseInt(dirFolder);
+
+                            if (dirFolderNum >= folderANum && dirFolderNum <= folderBNum) {
+                                System.out.println("Found range for dir:" + folderANum + ":" + folderBNum);
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
-
             return false;
         }
 
