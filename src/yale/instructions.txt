@@ -1,0 +1,15 @@
+Instructions
+------------
+
+Mac
+----
+1) Mount the share by going to "Connect to Server" via Finder.
+2) In the application, click on "Browse Source Folder".
+3) Browse to Volumes (typically under "Macintosh HD") and select the relevant directory within the share (typically labelled 'home').
+4) Select the target folder.
+5) Select overwrite if you want your target files to be replaced.
+6) Specify folders of interest in the identifiers box.
+7) Once you click "Copy", the Info box and progress bar will update.
+
+On the Mac, sometimes Finder can freeze when connecting a share. Close the application, and unmount the share (through
+Finder).
