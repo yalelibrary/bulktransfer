@@ -10,7 +10,7 @@ freezes due a bug and this would prevent the application from seeing the folder 
 If you experience this, just unmount/disconnect the share by clicking on the eject icon,
 and try a minute or so later.
 
-3) Now start the program with "java -jar bulk.jar". Click on "Browse Source Folder".
+3) (Now start the program by clicking on the jar file or with "java -jar bulk.jar"). Click on "Browse Source Folder".
 4) Browse to "Volumes" (typically under "Macintosh HD") and select the relevant directory within the share (typically labelled 'home').
 5) Select the target folder.
 6) Select Overwrite if you want your target files to be replaced.
