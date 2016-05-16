@@ -329,14 +329,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
 
             else { // customize as necessary
-                //int option = JOptionPane.showConfirmDialog(this,
-                // "The target file/directory already exists, do you want to overwrite it?",
-                // "Overwrite the target", JOptionPane.YES_NO_OPTION);
-                //if (option != JOptionPane.YES_OPTION)
-                    //return;
-                JOptionPane.showMessageDialog(this, "The target file/directory already exists!", "ERROR",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
+                int option = JOptionPane.showConfirmDialog(this,
+                 "The target file or directory already exists. Do you want to overwrite it?",
+                 "Overwrite the target", JOptionPane.YES_NO_OPTION);
+                if (option != JOptionPane.YES_OPTION)
+                     return;
+                //JOptionPane.showMessageDialog(this, "The target file/directory already exists!", "ERROR",
+                       //JOptionPane.ERROR_MESSAGE);
+                //return;
             }
 
             task = this.new CopyTask(source, target);
