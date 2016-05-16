@@ -69,9 +69,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private CopyTask task;
 
-    String source = "";
+    private String source = "";
 
-    String target = "";
+    private String target = "";
 
     private boolean stop = false;
 
@@ -100,9 +100,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         logger.setLevel(Level.ALL);
         logger.info("Initiated GUI");
 
-        // Populate the GUI
+        // Populate the GUI:
 
-        setTitle("BRBL File Transfer Utility");
+        setTitle("File Transfer Utility");
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -115,10 +115,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         });
 
-        //Create the menu bar.
+        //Create the menu bar:
         final JMenuBar menuBar = new JMenuBar();
 
-        //Build the first menu.
+        //Build the first menu:
         final JMenu menu = new JMenu("Help");
         menu.setMnemonic(KeyEvent.VK_H); //?
         menuBar.add(menu);
@@ -139,8 +139,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         menuBar.add(menu);
         setJMenuBar(menuBar);
 
-        // end: add menu
-
+        // Add source and target labels
         final JLabel lblSource = new JLabel("Source: ");
         final JLabel lblTarget = new JLabel("Target: ");
         txtSource = new JTextField(50);
@@ -161,7 +160,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         buttonsPanel.add(selectSourceButton, BorderLayout.WEST);
         buttonsPanel.add(selectTargetButton, BorderLayout.EAST);
 
-        //final JLabel lblProgressAll = new JLabel("Progress: ");
         progressAll = new JProgressBar(0, 100);
         progressAll.setStringPainted(true);
         detailsBox = new JTextArea(5, 50);
@@ -212,23 +210,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         final JPanel panInputLabels = new JPanel(new BorderLayout(0, 5));
         final JPanel panInputFields = new JPanel(new BorderLayout(0, 5));
-        final JPanel panProgressLabels = new JPanel(new BorderLayout(0, 5));
         final JPanel panProgressBars = new JPanel(new BorderLayout(0, 5));
 
         panInputLabels.add(lblSource, BorderLayout.NORTH);
         panInputLabels.add(lblTarget, BorderLayout.CENTER);
         panInputFields.add(txtSource, BorderLayout.NORTH);
         panInputFields.add(txtTarget, BorderLayout.CENTER);
-        //panProgressLabels.add(lblProgressAll, BorderLayout.NORTH);
         panProgressBars.add(progressAll, BorderLayout.NORTH);
 
         final JPanel panInput = new JPanel(new BorderLayout(0, 5));
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-        /*final JPanel panProgress = new JPanel(new BorderLayout(0, 5));
-        panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Stats"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5))); */
 
         final JPanel infoPanel = new JPanel(new BorderLayout());
         infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"),
@@ -249,8 +241,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInput.add(panInputLabels, BorderLayout.LINE_START);
         panInput.add(panInputFields, BorderLayout.CENTER);
         panIds.add(scrollPane2, BorderLayout.CENTER);
-        //panProgress.add(panProgressLabels, BorderLayout.LINE_START);
-        //panProgress.add(panProgressBars, BorderLayout.CENTER);
         infoPanel.add(scrollPane, BorderLayout.CENTER);
         infoPanel.add(panProgressBars, BorderLayout.SOUTH);
         panControls.add(btnCopy, BorderLayout.CENTER);
@@ -327,7 +317,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
 
                 //TODO check any missing steps that java.awt does
-
                 System.exit(0);
             }
         });
@@ -337,8 +326,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     @Override
     public void actionPerformed(ActionEvent e) {
         if ("Copy".equals(btnCopy.getText())) {
-            File source = new File(txtSource.getText());
-            File target = new File(txtTarget.getText());
+            final File source = new File(txtSource.getText());
+            final File target = new File(txtTarget.getText());
 
             if (!source.exists()) {
                 JOptionPane.showMessageDialog(this, "The source file/directory does not exist!",
@@ -351,20 +340,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
 
             else { // customize as necessary
-                int option = JOptionPane.showConfirmDialog(this,
+                final int option = JOptionPane.showConfirmDialog(this,
                  "The target file or directory already exists. Do you want to overwrite it?",
                  "Overwrite the target", JOptionPane.YES_NO_OPTION);
-                if (option != JOptionPane.YES_OPTION)
-                     return;
-                //JOptionPane.showMessageDialog(this, "The target file/directory already exists!", "ERROR",
-                       //JOptionPane.ERROR_MESSAGE);
-                //return;
+                if (option != JOptionPane.YES_OPTION) {
+                    return;
+                }
             }
 
             task = this.new CopyTask(source, target);
             task.addPropertyChangeListener(this);
             task.execute();
-
             btnCopy.setText("Cancel");
         } else if ("Cancel".equals(btnCopy.getText())) {
             synchronized (this)  {
