@@ -73,6 +73,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     String target = "";
 
+    private boolean stop = false;
+
     public FileCopy() {
         buildGUI();
     }
@@ -345,6 +347,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             btnCopy.setText("Cancel");
         } else if ("Cancel".equals(btnCopy.getText())) {
+            synchronized (this)  {
+                stop = true;
+            }
             task.cancel(true);
             btnCopy.setText("Copy");
         }
@@ -397,6 +402,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
          */
         @Override
         public Void doInBackground() throws Exception {
+            synchronized (this) {
+                stop = false;
+            }
             logger.info("Started background task");
             detailsBox.append("\n");
             retrieveTotalBytes(source); // used to calculate progress
@@ -578,7 +586,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
             }
 
-            private void fileCopy(final File sourceFile, final File targetFile) throws IOException{
+            private void fileCopy(final File sourceFile, final File targetFile) throws IOException {
+
+                if (stop) {
+                    return;
+                }
+
                 logger.log(Level.INFO, "Copying file:{0}", new Object[]{sourceFile.getAbsolutePath()});
                 detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
