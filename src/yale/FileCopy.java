@@ -75,6 +75,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private boolean stop = false;
 
+    private JCheckBox checkBox;
+
     public FileCopy() {
         buildGUI();
     }
@@ -223,15 +225,23 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         final JPanel panInput = new JPanel(new BorderLayout(0, 5));
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
         final JPanel panProgress = new JPanel(new BorderLayout(0, 5));
         panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Stats"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
         final JPanel infoPanel = new JPanel(new BorderLayout());
         infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
         final JPanel panIds = new JPanel(new BorderLayout());
         panIds.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Identifiers"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+        final JPanel panOptions = new JPanel(new BorderLayout());
+        panOptions.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Options"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
         final JPanel panControls = new JPanel(new BorderLayout());
         panControls.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
@@ -244,13 +254,22 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         infoPanel.add(panProgress, BorderLayout.SOUTH);
         panControls.add(btnCopy, BorderLayout.CENTER);
 
+        // Add the checkbox:
+        JPanel checkboxPanel = new JPanel(new BorderLayout(0, 5));
+        checkBox = new JCheckBox("Overwrite");
+        checkboxPanel.add(checkBox);
+        panOptions.add(checkboxPanel, BorderLayout.LINE_START);
+
+        // Add panels to upper pane:
         final JPanel panUpper = new JPanel(new BorderLayout());
         panUpper.add(buttonsPanel, BorderLayout.NORTH);
         panUpper.add(panInput, BorderLayout.CENTER);
 
+        // Add to content pane:
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         contentPane.add(panUpper, BorderLayout.NORTH);
         contentPane.add(panIds, BorderLayout.CENTER);
+        contentPane.add(panOptions, BorderLayout.CENTER);
         contentPane.add(infoPanel, BorderLayout.CENTER);
         contentPane.add(panControls, BorderLayout.SOUTH);
 
@@ -501,7 +520,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                     if (src.isDirectory()) {
                         if (!browse(src)) {
-                            detailsBox.append("Skipped:" + src.getName() + "\n");
+                            detailsBox.append("Skipped directory:" + src.getName() + "\n");
                             continue;  //skip if we don't want to browse the folder
                         }
                     }
@@ -589,6 +608,13 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             private void fileCopy(final File sourceFile, final File targetFile) throws IOException {
 
                 if (stop) {
+                    return;
+                }
+
+                // if it already exists skip it if the user wants
+                if (!checkBox.isSelected() && targetFile.exists()) {
+                    logger.log(Level.INFO, "Skipped file:{0}", new Object[]{sourceFile.getAbsolutePath()});
+                    detailsBox.append("Skipped file: " + sourceFile.getAbsolutePath() + "\n");
                     return;
                 }
 
