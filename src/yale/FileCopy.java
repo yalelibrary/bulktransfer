@@ -119,20 +119,20 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         final JMenuBar menuBar = new JMenuBar();
 
         //Build the first menu.
-        final JMenu menu = new JMenu("Actions");
-        menu.setMnemonic(KeyEvent.VK_A); //?
+        final JMenu menu = new JMenu("Help");
+        menu.setMnemonic(KeyEvent.VK_H); //?
         menuBar.add(menu);
 
         // Create first menu item:
         final JMenuItem menuItem = new JMenuItem("About",
-                KeyEvent.VK_T);
+                KeyEvent.VK_A);
         menuItem.addActionListener(new AboutDialogAction());
         menu.add(menuItem);
 
 
         // Create second menu item:
         final JMenuItem menuItem2 = new JMenuItem("Help",
-                KeyEvent.VK_H);
+                KeyEvent.VK_P);
         menuItem2.addActionListener(new HelpAction());
         menu.add(menuItem2);
 
