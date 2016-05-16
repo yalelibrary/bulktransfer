@@ -131,8 +131,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
 
         // Create second menu item:
-        final JMenuItem menuItem2 = new JMenuItem("Help",
-                KeyEvent.VK_P);
+        final JMenuItem menuItem2 = new JMenuItem("Instructions",
+                KeyEvent.VK_I);
         menuItem2.addActionListener(new HelpAction());
         menu.add(menuItem2);
 
@@ -161,12 +161,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         buttonsPanel.add(selectSourceButton, BorderLayout.WEST);
         buttonsPanel.add(selectTargetButton, BorderLayout.EAST);
 
-        final JLabel lblProgressAll = new JLabel("Progress: ");
+        //final JLabel lblProgressAll = new JLabel("Progress: ");
         progressAll = new JProgressBar(0, 100);
         progressAll.setStringPainted(true);
         detailsBox = new JTextArea(5, 50);
 
-        final Color c = Color.LIGHT_GRAY;
+        final Color c = Color.WHITE;
         detailsBox.setBackground(c);
 
         detailsBox.setEditable(false);
@@ -219,20 +219,21 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInputLabels.add(lblTarget, BorderLayout.CENTER);
         panInputFields.add(txtSource, BorderLayout.NORTH);
         panInputFields.add(txtTarget, BorderLayout.CENTER);
-        panProgressLabels.add(lblProgressAll, BorderLayout.NORTH);
+        //panProgressLabels.add(lblProgressAll, BorderLayout.NORTH);
         panProgressBars.add(progressAll, BorderLayout.NORTH);
 
         final JPanel panInput = new JPanel(new BorderLayout(0, 5));
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
-        final JPanel panProgress = new JPanel(new BorderLayout(0, 5));
+        /*final JPanel panProgress = new JPanel(new BorderLayout(0, 5));
         panProgress.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Stats"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+                BorderFactory.createEmptyBorder(5, 5, 5, 5))); */
 
         final JPanel infoPanel = new JPanel(new BorderLayout());
-        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Info"),
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Progress"),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        //infoPanel.setBackground(Color.gray);
 
         final JPanel panIds = new JPanel(new BorderLayout());
         panIds.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Identifiers"),
@@ -248,10 +249,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInput.add(panInputLabels, BorderLayout.LINE_START);
         panInput.add(panInputFields, BorderLayout.CENTER);
         panIds.add(scrollPane2, BorderLayout.CENTER);
-        panProgress.add(panProgressLabels, BorderLayout.LINE_START);
-        panProgress.add(panProgressBars, BorderLayout.CENTER);
+        //panProgress.add(panProgressLabels, BorderLayout.LINE_START);
+        //panProgress.add(panProgressBars, BorderLayout.CENTER);
         infoPanel.add(scrollPane, BorderLayout.CENTER);
-        infoPanel.add(panProgress, BorderLayout.SOUTH);
+        infoPanel.add(panProgressBars, BorderLayout.SOUTH);
         panControls.add(btnCopy, BorderLayout.CENTER);
 
         // Add the checkbox:

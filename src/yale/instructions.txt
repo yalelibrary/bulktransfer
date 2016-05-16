@@ -1,15 +1,20 @@
-Instructions
-------------
+Mac Instructions
+------------------
 
-Mac
-----
-1) Mount the share by going to "Connect to Server" via Finder.
-2) In the application, click on "Browse Source Folder".
-3) Browse to Volumes (typically under "Macintosh HD") and select the relevant directory within the share (typically labelled 'home').
-4) Select the target folder.
-5) Select overwrite if you want your target files to be replaced.
-6) Specify folders of interest in the identifiers box.
-7) Once you click "Copy", the Info box and progress bar will update.
+1) Open Finder / select "Go" / select "Connect to Server...".
+2) Enter server address: "smb://storage.yale.edu/home/fc_Beinecke_807001-YUL"
 
-On the Mac, sometimes Finder can freeze when connecting a share. Close the application, and unmount the share (through
-Finder).
+This will mount the share. Make sure that you can see the folder you want to copy in Finder. Sometimes, Finder
+freezes due a bug and this would prevent the application from seeing the folder in the first place.
+
+If you experience this, just unmount/disconnect the share by clicking on the eject icon,
+and try a minute or so later.
+
+3) Now start the program with "java -jar bulk.jar". Click on "Browse Source Folder".
+4) Browse to "Volumes" (typically under "Macintosh HD") and select the relevant directory within the share (typically labelled 'home').
+5) Select the target folder.
+6) Select Overwrite if you want your target files to be replaced.
+7) Specify folders of interest in the identifiers box.
+8) Once you click "Copy", the Info box and progress bar will update.
+
+When done, unmount the share via Finder.
