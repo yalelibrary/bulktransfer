@@ -40,6 +40,6 @@ class AboutDialogAction implements Action {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        JOptionPane.showMessageDialog(null, "File Transfer Utility");
+        JOptionPane.showMessageDialog(null, "Yale Library IT BRBL File Transfer Utility");
     }
 }
