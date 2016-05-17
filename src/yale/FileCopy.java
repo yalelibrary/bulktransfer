@@ -1,6 +1,7 @@
 package yale;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -33,11 +34,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JTextField;
+import javax.swing.JProgressBar;
+import javax.swing.JButton;
+import javax.swing.JTextArea;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultCaret;
-import javax.jnlp.*;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.BoxLayout;
+import javax.swing.JFileChooser;
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.SwingUtilities;
+import javax.swing.JScrollPane;
+import javax.swing.JLabel;
+import javax.swing.SwingWorker;
 
 
 /**
@@ -48,8 +65,6 @@ import javax.jnlp.*;
 public class FileCopy extends JFrame implements ActionListener, PropertyChangeListener {
 
     private static Logger logger = Logger.getLogger("yale.FileCopy");
-
-    static BasicService basicService = null;
 
     private static final long serialVersionUID = 1L;
 
