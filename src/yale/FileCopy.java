@@ -534,32 +534,22 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        /**
-         * Decides whether to download a folder or not. A type of a filter, hence
-         * should be replaced by a FileFilter
-         */
-        private boolean browse(final File dir) {
+        private boolean downloadFile(final File f) {
 
-            for (final String s : identifiers) {
+            final String fileName = f.getName();
 
-                if (s.isEmpty()) {
-                    continue;
-                }
+            for (String s : identifiers) {
 
-                if (dir.getAbsolutePath().contains(s)) { //TODO check
+                if (s.equals(fileName)) {
                     return true;
                 }
-
-                // if in pattern 22-444, get range
-
-                final String dirName = dir.getName();
-
-                //FIXME should not repeat the range for each
 
                 if (s.contains("-")) {
                     final String[] sp = s.split("-");
 
                     assert (sp.length == 2);  //TODO
+
+                    //strip digits
 
                     final String folderA = sp[0].replaceAll("[^\\d.]", "");
                     final int folderANum = Integer.parseInt(folderA);
@@ -568,20 +558,30 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     final String prefixA = sp[0].replace(sp[0], "");
                     final String prefixB = sp[1].replace(sp[1], "");
 
-                    if (prefixA.equals(prefixB) && dirName.startsWith(prefixA)) {
-                        final String dirFolder = dirName.replaceAll("[^\\d.]", "");
+                    if (prefixA.equals(prefixB) && fileName.startsWith(prefixA)) {
+                        final String fi = fileName.replaceAll("[^\\d.]", "");
 
-                        if (!dirFolder.isEmpty()) {
-                            final int dirFolderNum = Integer.parseInt(dirFolder);
+                        if (!fi.isEmpty()) {
+                            final int fileNum = Integer.parseInt(fi);
 
-                            if (dirFolderNum >= folderANum && dirFolderNum <= folderBNum) {
+                            if (fileNum >= folderANum && fileNum <= folderBNum) {
                                 return true;
                             }
                         }
                     }
                 }
             }
+
             return false;
+        }
+
+        /**
+         * Decides whether to download a folder or not. A type of a filter, hence
+         * should be replaced by a FileFilter
+         */
+        private boolean browse(final File dir) {
+
+            return true;  // replace as necessary
         }
 
         /**
