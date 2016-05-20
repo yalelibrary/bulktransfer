@@ -439,8 +439,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
 
                 // filter in
-                final String s[] = txtIdentifiers.getText().split("\\r?\\n");
-                identifiers = new ArrayList<String>(Arrays.asList(s)) ;
+                //final String s[] = txtIdentifiers.getText().split("\\r?\\n");
+                identifiers = Arrays.asList(txtIdentifiers.getText().split("\\s*,\\s*"));
+                //identifiers = new ArrayList<String>(Arrays.asList(s)) ;
                 gather(source, target);
                 copyFiles();
             } catch (Exception e) {
@@ -530,15 +531,33 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     gather(src, dest);
                 }
             } else { // add file object to map for later multithreaded retrieval
-                filesToCopy.put(sourceFile, targetFile);
+                if (downloadFile(sourceFile)) {
+                    filesToCopy.put(sourceFile, targetFile);
+                } else {
+                    System.out.println("Skipped:" + sourceFile.getAbsolutePath());
+                }
             }
         }
 
         private boolean downloadFile(final File f) {
 
-            final String fileName = f.getName();
+            final String fullFileName = f.getName();
 
-            for (String s : identifiers) {
+            // remove the file extension
+
+            int count = fullFileName.length() - fullFileName.replace(".", "").length();
+
+            if (count > 1) {
+                detailsBox.append("Unexpected file name:" + f.getAbsolutePath());
+                return false;
+            }
+
+
+            final String fileName = fullFileName.substring(0, fullFileName.lastIndexOf('.'));
+
+            // System.out.println("Will evaluate:" + fileName);
+
+            for (final String s : identifiers) {
 
                 if (s.equals(fileName)) {
                     return true;
@@ -547,28 +566,44 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 if (s.contains("-")) {
                     final String[] sp = s.split("-");
 
-                    assert (sp.length == 2);  //TODO
+                    if (sp.length == 2) {
 
-                    //strip digits
+                        //strip digits
 
-                    final String folderA = sp[0].replaceAll("[^\\d.]", "");
-                    final int folderANum = Integer.parseInt(folderA);
-                    final String folderB = sp[1].replaceAll("[^\\d.]", "");
-                    final int folderBNum = Integer.parseInt(folderB);
-                    final String prefixA = sp[0].replace(sp[0], "");
-                    final String prefixB = sp[1].replace(sp[1], "");
+                        final String fileA = sp[0].replaceAll("[^\\d.]", "");
 
-                    if (prefixA.equals(prefixB) && fileName.startsWith(prefixA)) {
-                        final String fi = fileName.replaceAll("[^\\d.]", "");
+                        if (!fileA.matches("[0-9]+")) {
+                            continue;
+                        }
 
-                        if (!fi.isEmpty()) {
-                            final int fileNum = Integer.parseInt(fi);
 
-                            if (fileNum >= folderANum && fileNum <= folderBNum) {
-                                return true;
+                        final int fileANum = Integer.parseInt(fileA);
+                        final String fileB = sp[1].replaceAll("[^\\d.]", "");
+
+                        if (!fileB.matches("[0-9]+")) {
+                            continue;
+                        }
+
+                        final int fileBNum = Integer.parseInt(fileB);
+                        final String prefixA = sp[0].replace(sp[0], "");
+                        final String prefixB = sp[1].replace(sp[1], "");
+
+                        if (prefixA.equals(prefixB) && fileName.startsWith(prefixA)) {
+                            final String fi = fileName.replaceAll("[^\\d.]", "");
+
+                            if (!fi.isEmpty()) {
+                                if (!fi.matches("[0-9]+")) {
+                                    continue;
+                                }
+
+                                final int fileNum = Integer.parseInt(fi);
+
+                                if (fileNum >= fileANum && fileNum <= fileBNum) {
+                                    return true;
+                                }
                             }
                         }
-                    }
+                    } // end of sp.length == 2
                 }
             }
 
