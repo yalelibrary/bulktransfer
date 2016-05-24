@@ -427,8 +427,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 stop = false;
             }
             logger.info("Started background task");
+
             detailsBox.append("\n");
-            retrieveTotalBytes(source); // used to calculate progress
+            detailsBox.append("Started copy:" + new Date().toString() + "\n");
+            //retrieveTotalBytes(source); // used to calculate progress
 
             logger.log(Level.INFO, "Total bytes:{0}", new Object[]{totalBytes});
 
@@ -497,7 +499,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             for (final File file : files) {
                 if (file.isDirectory()) {
-                    retrieveTotalBytes(file);
+                    return;
                 } else {
                     totalBytes += file.length();
                 }
@@ -510,10 +512,26 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         private void gather(final File sourceFile, final File targetFile) throws IOException {
             if (sourceFile.isDirectory()) {
 
-                if (!targetFile.exists()) {
+                final String absPath = sourceFile.getAbsolutePath();
+
+                logger.log(Level.INFO, "Looking in:{0}", absPath);
+                detailsBox.append("Looking in: " + absPath + "\n");
+
+                // Temporary check:
+
+
+                if (absPath.contains("CaptureOne") || absPath.contains(".DS_Store") ) {
+                    return;
+                }
+
+                if (sourceFile.getName().contains(".")) {
+                    return;
+                }
+
+                /*if (!targetFile.exists()) {
                     boolean success = targetFile.mkdirs();
                     logger.log(Level.INFO, "Dir created:{0}", new Object[]{success});
-                }
+                }*/
 
                 final String[] paths = sourceFile.list();
 
@@ -521,20 +539,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     final File src = new File(sourceFile, filePath);
                     final File dest = new File(targetFile, filePath);
 
-                    if (src.isDirectory()) {
-                        if (!browse(src)) {
-                            detailsBox.append("Skipped directory:" + src.getName() + "\n");
-                            continue;  //skip if we don't want to browse the folder
-                        }
-                    }
-
                     gather(src, dest);
                 }
             } else { // add file object to map for later multithreaded retrieval
                 if (downloadFile(sourceFile)) {
+                    detailsBox.append("Found file:" + sourceFile.getAbsolutePath() + "\n");
+                    System.out.println("Found file:" + sourceFile.getAbsolutePath() + "\n");
+                    retrieveTotalBytes(sourceFile);
                     filesToCopy.put(sourceFile, targetFile);
-                } else {
-                    System.out.println("Skipped:" + sourceFile.getAbsolutePath());
                 }
             }
         }
@@ -548,7 +560,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             int count = fullFileName.length() - fullFileName.replace(".", "").length();
 
             if (count > 1) {
-                detailsBox.append("Unexpected file name:" + f.getAbsolutePath());
+                detailsBox.append("Unexpected file name:" + f.getAbsolutePath() + "\n");
                 return false;
             }
 
@@ -655,7 +667,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     return;
                 }
 
-                logger.log(Level.INFO, "Copying file:{0}", new Object[]{sourceFile.getAbsolutePath()});
+                logger.log(Level.INFO, "Copying file:{0} to path:{1}", new Object[]{sourceFile.getAbsolutePath(), targetFile.getAbsolutePath()});
                 detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
