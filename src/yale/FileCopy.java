@@ -445,17 +445,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 index(source, target);
 
                 System.out.println("Index size:" + filesMap.size());
-                /*
-                if (dirs.isEmpty()) { // N.B. multiple caches?
-                    detailsBox.append("Building folder cache...");
-                    getFolderNames(source, target);
-                    detailsBox.append("Built cache:" + new Date().toString() + "\n");
-                } else {
-                    detailsBox.append("Reusing cache" + "\n");
-                }
 
-                System.out.println("Accumulated folder size:" + dirs.size());
-                checkFilesInDirs(); */
+
 
                 //copyFiles();
             } catch (Exception e) {
@@ -467,57 +458,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             return null;
         }
 
-        private void checkFilesInDirs(){
-            detailsBox.append("Checking search identifiers against the cache..." + "\n");
 
-            for (String d : dirs) {
-                checkIdentifierAgainstFile(d); //TODO accommodate multiple identifiers
-            }
-        }
-
-        //FIXME
-        private void checkIdentifierAgainstFile(final String dir){
-            for (final String s : identifiers) {
-                final File f = new File(dir + System.getProperty("file.separator") + s + ".tif"); //TODO
-                if (f.exists()) {
-                    filesToCopy.put(f, getTargetPath(s));
-                    detailsBox.append("Will copy: " + f.getAbsolutePath() + "\n");
-                }
-            }
-        }
-
-        //FIXME - TODO
-        private File getTargetPath(final String s){
-            return new File("/tmp/" + s);
-        }
-
-
-        /**
-         * Adds folder names to list
-         */
-        private void getFolderNames(final File sourceFile, final File targetFile) throws IOException {
-            if (sourceFile.isDirectory()) {
-                final String absPath = sourceFile.getAbsolutePath();
-                if (absPath.contains("CaptureOne") || absPath.contains(".DS_Store") ) {
-                    return;
-                }
-
-                dirs.add(absPath);
-
-                if (sourceFile.getName().equalsIgnoreCase("Derivative")) {
-                    //System.out.println("Stopping here:" + sourceFile.getAbsolutePath());
-                    return;   // don't go underneath since it's all images
-                }
-
-                final String[] paths = sourceFile.list(); // use a filter here
-
-                for (final String filePath : paths) {
-                    final File src = new File(sourceFile, filePath);
-                    final File dest = new File(targetFile, filePath);
-                    getFolderNames(src, dest);
-                }
-            }
-        }
 
         /**
          * Makes directories (if necessary) and populates a map (for later retrieval)
