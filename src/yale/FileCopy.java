@@ -412,6 +412,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private List<String> identifiers = new ArrayList<String>();
 
+        private List<String> dirs = new ArrayList<String>();
+
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
@@ -423,43 +425,56 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
          */
         @Override
         public Void doInBackground() throws Exception {
+
             synchronized (this) {
                 stop = false;
             }
-            logger.info("Started background task");
 
-            detailsBox.append("\n");
-            detailsBox.append("Started copy:" + new Date().toString() + "\n");
-            //retrieveTotalBytes(source); // used to calculate progress
+            detailsBox.append("\nStarted search: " + new Date().toString() + "\n");
+            logger.info("Started search");
 
-            logger.log(Level.INFO, "Total bytes:{0}", new Object[]{totalBytes});
+            if (suspiciousTarget(target.getAbsolutePath())) {
+                detailsBox.append("Forbidden target folder " + "\n");
+                return null;
+            }
 
             try {
-                if (suspiciousTarget(target.getAbsolutePath())) {
-                    detailsBox.append("Forbidden target folder");
-                    return null;
-                }
-
-                // filter in
-                //final String s[] = txtIdentifiers.getText().split("\\r?\\n");
-                identifiers = Arrays.asList(txtIdentifiers.getText().split("\\s*,\\s*"));
-                //identifiers = new ArrayList<String>(Arrays.asList(s)) ;
-                gather(source, target);
-                copyFiles();
+                identifiers = Arrays.asList(txtIdentifiers.getText().split("\\s*,\\s*")); //.split("\\r?\\n");
+                //gather(source, target);
+                getFolderNames(source, target);
+                System.out.println("Accumulated folder size:" + dirs.size());
+                checkFilesInDirs();
+                //copyFiles();
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Internal error:", e);
-                detailsBox.append("\n Error in copying one or more files: \n");
-                detailsBox.append(e.getCause().toString());
+                detailsBox.append("\n Error in copying one or more files: \n" + e.getCause());
             }
-            detailsBox.append("\nOK\n");
+            detailsBox.append("\nEnd search: " + new Date().toString() + "\n");
+            logger.info("End search");
             return null;
         }
 
-        @Override
-        public void done() {
-            setProgress(100);
-            btnCopy.setText("Copy");
+        private void checkFilesInDirs(){
+            for (String d : dirs) {
+                checkIdentifierAgainstFile(d); //TODO accommodate multiple identifiers
+            }
         }
+
+        private void checkIdentifierAgainstFile(final String dir){
+            for (final String s : identifiers) {
+                final File f = new File(dir + System.getProperty("file.separator") + dir);
+                if (f.exists()) {
+                    filesToCopy.put(f, getTargetPath(s));
+                    detailsBox.append("Will copy: " + f.getAbsolutePath() + "\n");
+                }
+            }
+        }
+
+        //FIXME - TODO
+        private File getTargetPath(final String s){
+            return new File("/tmp/" + s);
+        }
+
 
         // Copy files stored in java.util.Map
         private void copyFiles() {
@@ -551,6 +566,43 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
+        /**
+         * Makes directories (if necessary) and populates a map (for later retrieval)
+         */
+        private void getFolderNames(final File sourceFile, final File targetFile) throws IOException {
+            if (sourceFile.isDirectory()) {
+                final String absPath = sourceFile.getAbsolutePath();
+
+                logger.log(Level.INFO, "Looking in:{0}", absPath);
+                //detailsBox.append("Looking in: " + absPath + "\n");
+
+                if (absPath.contains("CaptureOne") || absPath.contains(".DS_Store") ) {
+                    return;
+                }
+
+                dirs.add(absPath);
+
+                final String[] paths = sourceFile.list(); // use a filter here
+
+                for (final String filePath : paths) {
+                    final File src = new File(sourceFile, filePath);
+                    final File dest = new File(targetFile, filePath);
+
+                    if (!src.isDirectory()) {
+                        continue;
+                    }
+
+                    getFolderNames(src, dest);
+                }
+            }
+        }
+
+        @Override
+        public void done() {
+            setProgress(100);
+            btnCopy.setText("Copy");
+        }
+
         private boolean downloadFile(final File f) {
 
             final String fullFileName = f.getName();
@@ -621,6 +673,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             return false;
         }
+
+
 
         /**
          * Decides whether to download a folder or not. A type of a filter, hence
