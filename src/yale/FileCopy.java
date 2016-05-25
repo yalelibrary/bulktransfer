@@ -518,7 +518,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
 
         private boolean downloadFile(final File f) {
-            return DownloadFile.download(f, identifiers);
+            return DownloadFileFilter.download(f, identifiers);
         }
 
         @Override

@@ -3,7 +3,7 @@ package yale;
 import java.io.File;
 import java.util.List;
 
-public class DownloadFile {
+public class DownloadFileFilter {
 
     public static boolean download(final File f, List<String> identifiers) {
 
