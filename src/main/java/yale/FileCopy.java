@@ -20,8 +20,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -413,10 +413,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private final int MAX_THREADS = 10;
 
-        private Map<File, File> filesToCopy = new HashMap<File, File>();
-
-        private Map<String, String> filesMap = new HashMap<String, String>();
-
         private List<String> identifiers = new ArrayList<String>();
 
         public CopyTask(File source, File target) {
@@ -435,8 +431,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 stop = false;
             }
 
-            detailsBox.append("\nStarted: " + new Date().toString() + "\n");
-            logger.info("Started");
+            logger.log(Level.INFO, "Started processing:{0}", source.getAbsolutePath());
+            detailsBox.append("\nStarted processing: " + new Date().toString() + "\n");
 
             if (suspiciousTarget(target.getAbsolutePath())) {
                 detailsBox.append("Forbidden target folder " + "\n");
@@ -445,59 +441,32 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             try {
                 identifiers = Arrays.asList(txtIdentifiers.getText().split("\\s*,\\s*")); //.split("\\r?\\n");
-                index(source, target);
-
-                System.out.println("Index size:" + filesMap.size());
-
-
-
-                //copyFiles();
+                List<String> fileNames = expandIdentifiers(identifiers);
+                System.out.println("The identifiers are:" + fileNames);
+                Map<File, File> filesToCopy = getPaths(fileNames);
+                createCopyThreads(filesToCopy);
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Internal error:", e);
                 detailsBox.append("\n Error in copying one or more files: \n" + e.getCause());
             }
             detailsBox.append("End: " + new Date().toString() + "\n");
-            logger.info("End search");
+            logger.log(Level.INFO, "Ended processing:{0}", source.getAbsolutePath());
+            identifiers = new ArrayList<>(); //reset
             return null;
         }
 
+        // Gets path from the crawler web service
+        // Note: could be extended in future to get paths locally
+        private Map<File, File> getPaths(List<String> identifiers) {
+            return Collections.emptyMap(); //TODO
+        }
 
-
-        /**
-         * Makes directories (if necessary) and populates a map (for later retrieval)
-         */
-        private void index(final File sourceFile, final File targetFile) throws IOException {
-            if (sourceFile.isDirectory()) {
-                final String absPath = sourceFile.getAbsolutePath();
-
-                logger.log(Level.INFO, "Looking in:{0}", absPath);
-
-                if (absPath.contains("CaptureOne") || absPath.contains(".DS_Store") || sourceFile.getName().startsWith(".") ) { // TODO
-                    return;
-                }
-                final String[] paths = sourceFile.list();
-
-                for (final String filePath : paths) {
-                    final File src = new File(sourceFile, filePath);
-                    final File dest = new File(targetFile, filePath);
-
-                    index(src, dest);
-                }
-            } else { // add file object to map
-                final String fileName = sourceFile.getName();
-                final String absPath = sourceFile.getAbsolutePath();
-
-                if (fileName.startsWith(".DS_Store") || fileName.startsWith("._.DS_Store")) {
-                    return;
-                }
-                logger.log(Level.INFO, "Put file:{0} for: {1}", new Object[]{fileName, absPath});
-                //filesMap.put(fileName, sourceFile.getAbsolutePath());
-                map.put(fileName, absPath);
-            }
+        private List<String> expandIdentifiers(List<String> identifiers){
+            return identifiers;
         }
 
         // Copy files stored in java.util.Map
-        private void copyFiles() {
+        private void createCopyThreads(final Map<File, File> filesToCopy) {
             final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
             final Set<File> files = filesToCopy.keySet();
 
@@ -515,15 +484,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             } catch (InterruptedException e) {
                 logger.log(Level.WARNING, "Internal error:", e);
             }
-
-            filesToCopy.clear();
-            filesToCopy = new HashMap<File, File>();
-            identifiers = new ArrayList<String>();
         }
 
-
         private boolean downloadFile(final File f) {
-            return DownloadFileFilter.download(f, identifiers);
+            return DownloadFileFilter.downloadable(f, identifiers);
         }
 
         @Override
@@ -549,13 +513,13 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             @Override
             public void run() {
                 try {
-                    fileCopy(name, dest);
+                    copy(name, dest);
                 } catch (IOException e) {
                     logger.log(Level.WARNING, "Error:", e);
                 }
             }
 
-            private void fileCopy(final File sourceFile, final File targetFile) throws IOException {
+            private void copy(final File sourceFile, final File targetFile) throws IOException {
 
                 if (stop) {
                     return;

@@ -5,7 +5,7 @@ import java.util.List;
 
 public class DownloadFileFilter {
 
-    public static boolean download(final File f, List<String> identifiers) {
+    public static boolean downloadable(final File f, List<String> identifiers) {
 
         final String fullFileName = f.getName();
 
