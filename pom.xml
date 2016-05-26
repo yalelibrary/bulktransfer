@@ -8,6 +8,44 @@
     <artifactId>bulktransfer</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <cargo.version>1.4.12</cargo.version>
+        <test.context.path>/</test.context.path>
+        <build.timestamp>${maven.build.timestamp}</build.timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+        <validation-api.version>1.1.0.Final</validation-api.version>
+        <bootstrap-theme.version>1.0.10</bootstrap-theme.version>
+        <commons-logging.version>1.1.1</commons-logging.version>
+        <maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
+        <tomcat7-maven-plugin.version>2.2</tomcat7-maven-plugin.version>
+        <maven-war-plugin.version>2.0</maven-war-plugin.version>
+        <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+        <cargo-core-uberjar.version>1.4.12</cargo-core-uberjar.version>
+        <htmlunit.version>2.4</htmlunit.version>
+        <servlet-api.version>3.1.0</servlet-api.version>
+        <resteasy-jaxrs.version>3.0.10.Final</resteasy-jaxrs.version>
+        <javax.inject.version>1.0-PFD-1</javax.inject.version>
+        <javaee-api.version>7.0</javaee-api.version>
+        <surefire.version>4.12</surefire.version>
+        <slf4j.version>1.7.10</slf4j.version>
+        <httpclient.version>4.4</httpclient.version>
+        <logback.version>1.1.2</logback.version>
+        <hibernate.version>4.3.8.Final</hibernate.version>
+        <hibernate-c3p0.version>4.3.8.Final</hibernate-c3p0.version>
+        <commons-configuration.version>1.10</commons-configuration.version>
+
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

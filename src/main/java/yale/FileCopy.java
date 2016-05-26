@@ -1,5 +1,9 @@
 package yale;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -456,6 +460,13 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         // Gets path from the crawler web service
         // Note: could be extended in future to get paths locally
         private Map<File, File> getPaths(List<String> identifiers) {
+            try {
+                for (final String s : identifiers) { //TODO batch
+                    doGET(s);
+                }
+            } catch (Exception e) {
+                logger.log(Level.INFO, "Error lookuping file names:{0}", e);
+            }
             return Collections.emptyMap(); //TODO
         }
 
@@ -605,6 +616,13 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private boolean invalidTarget(final String filename) { //TODO expand (?)
         return filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")
                 || filename.contains("Volume");
+    }
+
+    public void doGET(final String s) throws Exception {
+        HttpClientManager httpClientManager = new HttpClientManager();
+        final HttpGet getMethod0 = httpClientManager.doGET(s);
+        final HttpResponse response0 = httpClientManager.httpClient.execute(getMethod0);
+        System.out.println("Content from ws:" + EntityUtils.toString(response0.getEntity()));
     }
 
 }
