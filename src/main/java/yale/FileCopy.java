@@ -431,19 +431,16 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 stop = false;
             }
 
-            logger.log(Level.INFO, "Started processing:{0}", source.getAbsolutePath());
-            detailsBox.append("\nStarted processing: " + new Date().toString() + "\n");
-
-            if (suspiciousTarget(target.getAbsolutePath())) {
+            if (invalidTarget(target.getAbsolutePath())) {
                 detailsBox.append("Forbidden target folder " + "\n");
                 return null;
             }
 
+            logger.log(Level.INFO, "Started processing:{0}", source.getAbsolutePath());
+            detailsBox.append("\nStarted processing: " + new Date().toString() + "\n");
+
             try {
-                identifiers = getIdentifiers(txtIdentifiers.getText());
-                logger.log(Level.INFO, "The regexed identifiers are:{0}", identifiers);
-                final List<String> fileNames = expandNumbers(identifiers);
-                logger.log(Level.INFO, "The modified identifiers are:{0}", fileNames);
+                final List<String> fileNames = expandNumbers(getIdentifiers(txtIdentifiers.getText()));
                 final Map<File, File> filesToCopy = getPaths(fileNames);
                 createCopyThreads(filesToCopy);
             } catch (Exception e) {
@@ -453,7 +450,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             detailsBox.append("End: " + new Date().toString() + "\n");
             logger.log(Level.INFO, "Ended processing:{0}", source.getAbsolutePath());
-            identifiers = new ArrayList<>(); //reset
             return null;
         }
 
@@ -474,7 +470,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
 
             pool.shutdown(); // Note
-            logger.info("Pool shutdown OK");
 
             try {
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -484,11 +479,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        private List<String> getIdentifiers(String text) {
+        private List<String> getIdentifiers(final String text) {
             List<String> lines = Arrays.asList(text.split("\\r?\\n")); //split by line
             List<String> identifiers = new ArrayList<>();
 
-            for (String s : lines) {
+            for (final String s : lines) {
                 String lineIdentifiers[] = s.split("\\s*,\\s*");      // split commas
 
                 for (final String pStr : lineIdentifiers) {
@@ -496,6 +491,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
             }
 
+            logger.log(Level.INFO, "regexed identifiers are:{0}", identifiers);
             return identifiers;
         }
 
@@ -531,6 +527,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
             }
 
+            logger.log(Level.INFO, "The modified identifiers are:{0}", identifiers);
             return expandedIdentifiers;
         }
 
@@ -580,7 +577,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     return;
                 }
 
-                logger.log(Level.INFO, "Copying file:{0} to path:{1}", new Object[]{sourceFile.getAbsolutePath(), targetFile.getAbsolutePath()});
+                logger.log(Level.INFO, "Copying file:{0} to path:{1}", new Object[]{sourceFile.getAbsolutePath(),
+                        targetFile.getAbsolutePath()});
                 detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
@@ -604,23 +602,9 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
     }
 
-    // TODO Filters file names
-    private boolean suspiciousTarget(final String filename) {
-
-        if (filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")) {
-            return true;
-        }
-
-        if (filename.contains("Volume")) {
-            return true;
-        }
-
-        if (filename.contains("ladybird")) {
-            return true;
-        }
-
-        return false;
+    private boolean invalidTarget(final String filename) { //TODO expand (?)
+        return filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")
+                || filename.contains("Volume");
     }
-
 
 }
