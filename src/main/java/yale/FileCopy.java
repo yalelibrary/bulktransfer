@@ -440,7 +440,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
 
             try {
-                identifiers = Arrays.asList(txtIdentifiers.getText().split("\\s*,\\s*")); //.split("\\r?\\n");
+                identifiers = getIdentifiers(txtIdentifiers.getText());
+                logger.log(Level.INFO, "The regexed identifiers are:{0}", identifiers);
                 final List<String> fileNames = expandNumbers(identifiers);
                 logger.log(Level.INFO, "The modified identifiers are:{0}", fileNames);
                 final Map<File, File> filesToCopy = getPaths(fileNames);
@@ -472,7 +473,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 pool.submit(new DownloadTask(source, target));
             }
 
-            pool.shutdown(); //TODO check. why is this shutdown here?
+            pool.shutdown(); // Note
             logger.info("Pool shutdown OK");
 
             try {
@@ -483,32 +484,58 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        public List<String> expandNumbers(List<String> identifiers) {
+        private List<String> getIdentifiers(String text) {
+            List<String> lines = Arrays.asList(text.split("\\r?\\n")); //split by line
+            List<String> identifiers = new ArrayList<>();
+
+            for (String s : lines) {
+                String lineIdentifiers[] = s.split("\\s*,\\s*");      // split commas
+
+                for (final String pStr : lineIdentifiers) {
+                    identifiers.add(pStr.trim());
+                }
+            }
+
+            return identifiers;
+        }
+
+        // Simple method to expand ranges, e.g., 3-5
+        private List<String> expandNumbers(final List<String> identifiers) {
 
             final List<String> expandedIdentifiers = new ArrayList<>();
 
             for (final String s : identifiers) {
 
                 if (s.contains("-")) {
+                    // remove space?
                     final String[] sp = s.split("-");
 
-                    if (sp.length == 2) {
+                    if (sp.length == 2 && valid(sp[0]) && valid(sp[1])) {
+
                         int i = Integer.parseInt(sp[0]);
-                        int j = Integer.parseInt(sp[1]);
+                        final int j = Integer.parseInt(sp[1]);
 
                         while (i <= j) {
                             expandedIdentifiers.add(String.valueOf(i));
                             i++;
                         }
                     } else {
-                        System.err.println("Unexpected number of range tokens");
+                        logger.log(Level.INFO, "Unexpected token. Ignoring :{}", s);
                     }
                 } else {
-                    expandedIdentifiers.add(s);
+                    if (valid(s)) {
+                        expandedIdentifiers.add(s);
+                    } else {
+                        logger.log(Level.INFO, "Unexpected token. Ignoring :{}", s);
+                    }
                 }
             }
 
             return expandedIdentifiers;
+        }
+
+        private boolean valid(String s) {
+            return s.matches("^[0-9]+$"); // only numbers allowed //TODO might have to accommodate others
         }
 
         @Override
