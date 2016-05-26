@@ -1,6 +1,7 @@
 package yale;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
@@ -15,17 +16,12 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +36,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JProgressBar;
@@ -65,7 +60,7 @@ import javax.swing.SwingWorker;
 
 
 /**
- * Simple GUI for copying files
+ * GUI for file search and transfer
  *
  * @author Osman Din
  */
@@ -116,7 +111,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         final String logfile = formatter.format(date);
 
         try {
-            logFileHandler = new FileHandler("log-" + logfile + ".log");
+            logFileHandler = new FileHandler("ft-" + logfile + ".log");
             logFileHandler.setFormatter(new SimpleFormatter());
         } catch (IOException e) {
             logger.log(Level.WARNING, "Internal error:", e);
@@ -146,19 +141,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         //Build the first menu:
         final JMenu menu = new JMenu("Help");
-        menu.setMnemonic(KeyEvent.VK_H); //?
+        menu.setMnemonic(KeyEvent.VK_H);
         menuBar.add(menu);
 
         // Create first menu item:
-        final JMenuItem menuItem = new JMenuItem("About",
-                KeyEvent.VK_A);
+        final JMenuItem menuItem = new JMenuItem("About", KeyEvent.VK_A);
         menuItem.addActionListener(new AboutDialogAction());
         menu.add(menuItem);
 
 
         // Create second menu item:
-        final JMenuItem menuItem2 = new JMenuItem("Instructions",
-                KeyEvent.VK_I);
+        final JMenuItem menuItem2 = new JMenuItem("Instructions", KeyEvent.VK_I);
         menuItem2.addActionListener(new HelpAction());
         menu.add(menuItem2);
 
@@ -407,7 +400,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     /**
      * Actual copying
      */
-    class CopyTask extends SwingWorker<Void, Integer> {
+    private class CopyTask extends SwingWorker<Void, Integer> {
 
         private File source;
 
@@ -459,6 +452,26 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             return null;
         }
 
+        // Copy files stored in java.util.Map
+        private void createCopyThreads(final Map<File, File> filesToCopy) {
+            final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
+            final Set<File> files = filesToCopy.keySet();
+
+            for (final File source : files) {
+                final File target = filesToCopy.get(source);
+                pool.submit(new DownloadTask(source, target));
+            }
+
+            pool.shutdown(); // Note
+
+            try {
+                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+                logger.info("Pool termination OK.");
+            } catch (InterruptedException e) {
+                logger.log(Level.WARNING, "Internal error:", e);
+            }
+        }
+
         // Gets path from the REMOTE crawler web service
         private Map<File, File> getPaths(List<String> identifiers) {
             final Map<File, File> paths = new HashMap<>();
@@ -489,26 +502,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 logger.log(Level.INFO, "Error looking up file path for:{0}", e);
             }
             return paths;
-        }
-
-        // Copy files stored in java.util.Map
-        private void createCopyThreads(final Map<File, File> filesToCopy) {
-            final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
-            final Set<File> files = filesToCopy.keySet();
-
-            for (final File source : files) {
-                final File target = filesToCopy.get(source);
-                pool.submit(new DownloadTask(source, target));
-            }
-
-            pool.shutdown(); // Note
-
-            try {
-                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                logger.info("Pool termination OK.");
-            } catch (InterruptedException e) {
-                logger.log(Level.WARNING, "Internal error:", e);
-            }
         }
 
         private List<String> getIdentifiers(final String text) {
@@ -567,10 +560,33 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             return s.matches("^[0-9]+$"); // only numbers allowed //TODO might have to accommodate others
         }
 
+
         @Override
         public void done() {
             setProgress(100);
             btnCopy.setText("Copy");
+        }
+
+        public String doGET(final String s) throws Exception {
+            HttpClientManager httpClientManager = new HttpClientManager();
+            final HttpGet getMethod0 = httpClientManager.doGET(s);
+            final HttpResponse httpResponse = httpClientManager.httpClient.execute(getMethod0);
+            HttpEntity e = httpResponse.getEntity();
+            String response = EntityUtils.toString(e);
+            logger.log(Level.INFO, "Content from ws:{0}", response);
+            return response;
+        }
+
+        private List<String> extract(final String s) {
+            String tmp = s.replace("[", "");
+            String tmp2 = tmp.replace("]","");
+            String[] arrs = tmp2.split("\\s*,\\s*");
+            return Arrays.asList(arrs);
+        }
+
+        private boolean invalidTarget(final String filename) { //TODO expand (?)
+            return filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")
+                    || filename.contains("Volume");
         }
 
         /**
@@ -618,25 +634,4 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
     }
-
-    private boolean invalidTarget(final String filename) { //TODO expand (?)
-        return filename.contains("storage.yale.edu") || filename.contains("fc_Beinecke-807001-YUL")
-                || filename.contains("Volume");
-    }
-
-    public String doGET(final String s) throws Exception {
-        HttpClientManager httpClientManager = new HttpClientManager();
-        final HttpGet getMethod0 = httpClientManager.doGET(s);
-        final HttpResponse response0 = httpClientManager.httpClient.execute(getMethod0);
-        //logger.log(Level.INFO, "Content from ws:{0}", EntityUtils.toString(response0.getEntity()));
-        return EntityUtils.toString(response0.getEntity());
-    }
-
-    private List<String> extract(final String s) {
-        String tmp = s.replace("[", "");
-        String tmp2 = tmp.replace("]","");
-        String[] arrs = tmp2.split("\\s*,\\s*");
-        return Arrays.asList(arrs);
-    }
-
 }
