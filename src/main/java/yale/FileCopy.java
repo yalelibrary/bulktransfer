@@ -1,5 +1,6 @@
 package yale;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -460,14 +462,34 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         // Gets path from the crawler web service
         // Note: could be extended in future to get paths locally
         private Map<File, File> getPaths(List<String> identifiers) {
+            Map<File, File> paths = new HashMap<>();
             try {
-                for (final String s : identifiers) { //TODO batch
-                    doGET(s);
+                for (final String id : identifiers) { //TODO batch
+                    final String response = doGET(id);
+                    final List<String> filePaths = extract(response);
+
+                    logger.info("File paths from service:" + filePaths);
+
+                    for (final String src : filePaths) { //TODO assuming one source
+                        final File srcFile = new File(src);
+
+                        if (!srcFile.exists()) {
+                            logger.log(Level.INFO, "File does not exist: {0}", new String[]{src});
+                            continue;
+                        }
+                        final String d = src.replace(source.getAbsolutePath(), "");
+                        final String destFile = target.getAbsolutePath() + File.separator + d;
+
+                        final File f = new File(destFile);
+
+                        paths.put(srcFile, f);
+                        logger.log(Level.INFO, "Put in map:{0}{1}", new String[]{src, destFile});
+                    }
                 }
             } catch (Exception e) {
-                logger.log(Level.INFO, "Error lookuping file names:{0}", e);
+                logger.log(Level.INFO, "Error looking up file path for:{0}", e);
             }
-            return Collections.emptyMap(); //TODO
+            return paths;
         }
 
         // Copy files stored in java.util.Map
@@ -588,26 +610,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     return;
                 }
 
-                logger.log(Level.INFO, "Copying file:{0} to path:{1}", new Object[]{sourceFile.getAbsolutePath(),
+                logger.log(Level.INFO, "Copying file: {0} to path: {1}", new Object[]{sourceFile.getAbsolutePath(),
                         targetFile.getAbsolutePath()});
                 detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
 
-                final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile));
-                final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
-                int readByte;
-
-                while ((readByte = bis.read()) != -1) {
-                    bos.write(readByte);
-                    setProgress((int) (copiedBytes++ * 100 / totalBytes));
-                }
-
-                try {
-                    bis.close();
-                    bos.close();
-                } catch (IOException e) {
-                    logger.log(Level.WARNING, "Internal error:", e);
-                }
-
+                FileUtils.copyFile(name, targetFile);
                 logger.log(Level.INFO, "Copied file:{0}", new Object[]{sourceFile.getAbsolutePath()});
             }
         }
@@ -618,11 +625,19 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 || filename.contains("Volume");
     }
 
-    public void doGET(final String s) throws Exception {
+    public String doGET(final String s) throws Exception {
         HttpClientManager httpClientManager = new HttpClientManager();
         final HttpGet getMethod0 = httpClientManager.doGET(s);
         final HttpResponse response0 = httpClientManager.httpClient.execute(getMethod0);
-        System.out.println("Content from ws:" + EntityUtils.toString(response0.getEntity()));
+        //logger.log(Level.INFO, "Content from ws:{0}", EntityUtils.toString(response0.getEntity()));
+        return EntityUtils.toString(response0.getEntity());
+    }
+
+    private List<String> extract(final String s) {
+        String tmp = s.replace("[", "");
+        String tmp2 = tmp.replace("]","");
+        String[] arrs = tmp2.split("\\s*,\\s*");
+        return Arrays.asList(arrs);
     }
 
 }
