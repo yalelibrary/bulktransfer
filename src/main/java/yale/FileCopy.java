@@ -459,18 +459,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             return null;
         }
 
-        // Gets path from the crawler web service
-        // Note: could be extended in future to get paths locally
+        // Gets path from the REMOTE crawler web service
         private Map<File, File> getPaths(List<String> identifiers) {
-            Map<File, File> paths = new HashMap<>();
+            final Map<File, File> paths = new HashMap<>();
             try {
-                for (final String id : identifiers) { //TODO batch
+                for (final String id : identifiers) { //batch should be ok. TODO check
                     final String response = doGET(id);
                     final List<String> filePaths = extract(response);
 
-                    logger.info("File paths from service:" + filePaths);
+                    //logger.info("File paths from service:" + filePaths);
 
-                    for (final String src : filePaths) { //TODO assuming one source
+                    for (final String src : filePaths) {
                         final File srcFile = new File(src);
 
                         if (!srcFile.exists()) {
@@ -483,7 +482,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                         final File f = new File(destFile);
 
                         paths.put(srcFile, f);
-                        logger.log(Level.INFO, "Put in map:{0}{1}", new String[]{src, destFile});
+                        logger.log(Level.INFO, "Populated map entry:{0}{1}", new String[]{src, destFile});
                     }
                 }
             } catch (Exception e) {
