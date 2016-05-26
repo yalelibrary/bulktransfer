@@ -441,14 +441,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             try {
                 identifiers = Arrays.asList(txtIdentifiers.getText().split("\\s*,\\s*")); //.split("\\r?\\n");
-                List<String> fileNames = expandIdentifiers(identifiers);
-                System.out.println("The identifiers are:" + fileNames);
-                Map<File, File> filesToCopy = getPaths(fileNames);
+                final List<String> fileNames = expandNumbers(identifiers);
+                logger.log(Level.INFO, "The modified identifiers are:{0}", fileNames);
+                final Map<File, File> filesToCopy = getPaths(fileNames);
                 createCopyThreads(filesToCopy);
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Internal error:", e);
                 detailsBox.append("\n Error in copying one or more files: \n" + e.getCause());
             }
+
             detailsBox.append("End: " + new Date().toString() + "\n");
             logger.log(Level.INFO, "Ended processing:{0}", source.getAbsolutePath());
             identifiers = new ArrayList<>(); //reset
@@ -461,16 +462,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             return Collections.emptyMap(); //TODO
         }
 
-        private List<String> expandIdentifiers(List<String> identifiers){
-            return identifiers;
-        }
-
         // Copy files stored in java.util.Map
         private void createCopyThreads(final Map<File, File> filesToCopy) {
             final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
             final Set<File> files = filesToCopy.keySet();
 
-            for (File source : files) {
+            for (final File source : files) {
                 final File target = filesToCopy.get(source);
                 pool.submit(new DownloadTask(source, target));
             }
@@ -486,8 +483,32 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
         }
 
-        private boolean downloadFile(final File f) {
-            return DownloadFileFilter.downloadable(f, identifiers);
+        public List<String> expandNumbers(List<String> identifiers) {
+
+            final List<String> expandedIdentifiers = new ArrayList<>();
+
+            for (final String s : identifiers) {
+
+                if (s.contains("-")) {
+                    final String[] sp = s.split("-");
+
+                    if (sp.length == 2) {
+                        int i = Integer.parseInt(sp[0]);
+                        int j = Integer.parseInt(sp[1]);
+
+                        while (i <= j) {
+                            expandedIdentifiers.add(String.valueOf(i));
+                            i++;
+                        }
+                    } else {
+                        System.err.println("Unexpected number of range tokens");
+                    }
+                } else {
+                    expandedIdentifiers.add(s);
+                }
+            }
+
+            return expandedIdentifiers;
         }
 
         @Override
