@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +94,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private JCheckBox checkBox;
 
     private List<String> dirs = new ArrayList<String>();  // cache of directories
+
+    ConcurrentMap<String, String> map;
 
     public FileCopy() {
         buildGUI();
@@ -482,12 +485,14 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
             } else { // add file object to map
                 final String fileName = sourceFile.getName();
+                final String absPath = sourceFile.getAbsolutePath();
 
                 if (fileName.startsWith(".DS_Store") || fileName.startsWith("._.DS_Store")) {
                     return;
                 }
-                logger.log(Level.INFO, "Put file:{0} for: {1}", new Object[]{sourceFile.getName(), sourceFile.getAbsolutePath()});
-                filesMap.put(sourceFile.getName(), sourceFile.getAbsolutePath());
+                logger.log(Level.INFO, "Put file:{0} for: {1}", new Object[]{fileName, absPath});
+                //filesMap.put(fileName, sourceFile.getAbsolutePath());
+                map.put(fileName, absPath);
             }
         }
 
