@@ -50,7 +50,7 @@ public class HttpClientManager {
     }
 
     private static String buildAppRestUrl() {
-        return "http://localhost:8085/fileservice/rest/search/"; //TODO dynamic
+        return "http://localhost:8080/fileservice/rest/search/"; //TODO dynamic
     }
 }
 
