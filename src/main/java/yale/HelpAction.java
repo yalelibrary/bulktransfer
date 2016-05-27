@@ -51,10 +51,9 @@ class HelpAction implements Action {
     }
 
     private String getText() {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer("Please consult project documentation.");
         try {
-            final URL oracle =   getClass().getResource("instructions.txt");
-
+            final URL oracle = getClass().getResource("file:///instructions.txt");
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(oracle.openStream()));
@@ -67,8 +66,8 @@ class HelpAction implements Action {
             }
 
             in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // ignore it
         }
 
         return sb.toString();
