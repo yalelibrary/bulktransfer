@@ -344,6 +344,10 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
             if (!target.exists() && source.isDirectory()) {
                 boolean op = target.mkdirs();
+                if (!op) {
+                    detailsBox.append("Error creating target directory. Check input and please try again.");
+                    return;
+                }
             }
 
             /*else { // customize as necessary
