@@ -1,9 +1,7 @@
 package yale;
 
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
@@ -35,22 +33,12 @@ public class HttpClientManager {
         cm.closeIdleConnections(IDLE_TIMEOUT, TimeUnit.SECONDS);
     }
 
-    public HttpGet doGET(final String param) {
+    public HttpGet doHttpGet(final String param) {
         final String url = appUrl + param + "/";
-        HttpGet get = new HttpGet(url);
-        return get;
+        return new HttpGet(url);
     }
-
-    private static String getProp(String s) {
-        return System.getProperty(s);
-    }
-
-    public HttpClient getHttpClient() {
-        return httpClient;
-    }
-
     private static String buildAppRestUrl() {
-        return "http://localhost:8080/fileservice/rest/search/"; //TODO dynamic
+        return "http://smldr01.library.yale.edu:8080/fileservice/rest/search/"; //TODO dynamic
     }
 }
 

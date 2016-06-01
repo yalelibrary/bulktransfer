@@ -547,7 +547,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         public String doGET(final String s) throws Exception {
             final HttpClientManager httpClientManager = new HttpClientManager();
-            final HttpGet getMethod0 = httpClientManager.doGET(s);
+            final HttpGet getMethod0 = httpClientManager.doHttpGet(s);
             final HttpResponse httpResponse;
             try {
                 httpResponse = httpClientManager.httpClient.execute(getMethod0);
