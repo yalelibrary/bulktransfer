@@ -608,7 +608,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                         targetFile.getAbsolutePath()});
                 detailsBox.append("Copying: " + filePath + "\n");
 
-                FileUtils.copyFile(name, targetFile);
+                try {
+                    FileUtils.copyFile(name, targetFile);
+                } catch (IOException e) {
+                    detailsBox.append("Error in copying:" + filePath + " : " + e.getMessage() +"\n");
+                    throw e;
+                }
                 logger.log(Level.INFO, "Copied file:{0}", new Object[]{sourceFile.getAbsolutePath()});
                 detailsBox.append("Done: " + filePath + "\n");
             }
