@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -55,9 +54,8 @@ class HelpAction implements Action {
         try {
             final URL oracle = getClass().getResource("file:///instructions.txt");
 
-            BufferedReader in = new BufferedReader(
+            final BufferedReader in = new BufferedReader(
                     new InputStreamReader(oracle.openStream()));
-
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
@@ -72,6 +70,4 @@ class HelpAction implements Action {
 
         return sb.toString();
     }
-
-
 }
