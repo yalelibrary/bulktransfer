@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -452,6 +453,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             final Map<File, File> paths = new HashMap<>();
             try {
                 for (final String id : identifiers) { //batch should be ok. TODO check
+                    detailsBox.append("Searching for:" + id + System.getProperty("line.separator"));
                     final String response = doGET(id);
                     final List<String> filePaths = extract(response);
 
@@ -474,7 +476,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     }
                 }
             } catch (Exception e) {
-                logger.log(Level.INFO, "Error looking up file path for:{0}", e);
+                logger.log(Level.INFO, "Error looking up file path for:", e);
             }
             return paths;
         }
@@ -545,14 +547,24 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         public String doGET(final String s) throws Exception {
             final HttpClientManager httpClientManager = new HttpClientManager();
             final HttpGet getMethod0 = httpClientManager.doGET(s);
-            final HttpResponse httpResponse = httpClientManager.httpClient.execute(getMethod0);
-            final HttpEntity e = httpResponse.getEntity();
-            final String response = EntityUtils.toString(e);
-            logger.log(Level.INFO, "Content from ws:{0}", response);
-            return response;
+            final HttpResponse httpResponse;
+            try {
+                httpResponse = httpClientManager.httpClient.execute(getMethod0);
+                final HttpEntity e = httpResponse.getEntity();
+                final String response = EntityUtils.toString(e);
+                logger.log(Level.INFO, "Content from ws:{0}", response);
+                return response;
+            } catch (IOException e) {
+                detailsBox.append("Error searching." + System.getProperty("line.separator"));
+                logger.log(Level.WARNING, "Error:", e);
+            }
+            return "";
         }
 
         private List<String> extract(final String s) {
+            if ( s== null || s.isEmpty()) {
+                return Collections.emptyList();
+            }
             final String tmp = s.replace("[", "");
             final String tmp2 = tmp.replace("]","");
             final String[] arrs = tmp2.split("\\s*,\\s*");
