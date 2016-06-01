@@ -613,20 +613,20 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     return;
                 }
 
-                String filePath = sourceFile.getCanonicalPath();
+                String source = sourceFile.getAbsolutePath();
 
-                logger.log(Level.INFO, "Copying file: {0} to path: {1}", new Object[]{sourceFile.getAbsolutePath(),
+                logger.log(Level.INFO, "Copying file: {0} to path: {1}", new Object[]{source,
                         targetFile.getAbsolutePath()});
-                detailsBox.append("Copying: " + filePath + LINE_SEPARTOR);
+                detailsBox.append("Copying: " + source + LINE_SEPARTOR);
 
                 try {
                     FileUtils.copyFile(name, targetFile);
                 } catch (IOException e) {
-                    detailsBox.append("Error in copying:" + filePath + " : " + e.getMessage() +LINE_SEPARTOR);
+                    detailsBox.append("Error in copying:" + source + " : " + e.getMessage() +LINE_SEPARTOR);
                     throw e;
                 }
-                logger.log(Level.INFO, "Copied file:{0}", new Object[]{sourceFile.getAbsolutePath()});
-                detailsBox.append("Done: " + filePath + LINE_SEPARTOR);
+                logger.log(Level.INFO, "Copied file:{0}", new Object[]{source});
+                detailsBox.append("Done: " + source + LINE_SEPARTOR);
             }
         }
     }
