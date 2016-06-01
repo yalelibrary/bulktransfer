@@ -505,18 +505,18 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
 
         private List<String> getIdentifiers(final String text) {
-            List<String> lines = Arrays.asList(text.split("\\r?\\n")); //split by line
-            List<String> identifiers = new ArrayList<>();
+            final List<String> lines = Arrays.asList(text.split("\\r?\\n")); //split by line
+            final List<String> identifiers = new ArrayList<>();
 
             for (final String s : lines) {
-                String lineIdentifiers[] = s.split("\\s*,\\s*");      // split commas
+                final String lineIdentifiers[] = s.split("\\s*,\\s*");      // split commas
 
                 for (final String pStr : lineIdentifiers) {
                     identifiers.add(pStr.trim());
                 }
             }
 
-            logger.log(Level.INFO, "regexed identifiers are:{0}", identifiers);
+            //logger.log(Level.INFO, "regexed identifiers are:{0}", identifiers);
             return identifiers;
         }
 
@@ -552,7 +552,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 }
             }
 
-            logger.log(Level.INFO, "The modified identifiers are:{0}", identifiers);
+            //logger.log(Level.INFO, "The modified identifiers are:{0}", identifiers);
             return expandedIdentifiers;
         }
 
@@ -568,19 +568,19 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         }
 
         public String doGET(final String s) throws Exception {
-            HttpClientManager httpClientManager = new HttpClientManager();
+            final HttpClientManager httpClientManager = new HttpClientManager();
             final HttpGet getMethod0 = httpClientManager.doGET(s);
             final HttpResponse httpResponse = httpClientManager.httpClient.execute(getMethod0);
-            HttpEntity e = httpResponse.getEntity();
-            String response = EntityUtils.toString(e);
+            final HttpEntity e = httpResponse.getEntity();
+            final String response = EntityUtils.toString(e);
             logger.log(Level.INFO, "Content from ws:{0}", response);
             return response;
         }
 
         private List<String> extract(final String s) {
-            String tmp = s.replace("[", "");
-            String tmp2 = tmp.replace("]","");
-            String[] arrs = tmp2.split("\\s*,\\s*");
+            final String tmp = s.replace("[", "");
+            final String tmp2 = tmp.replace("]","");
+            final String[] arrs = tmp2.split("\\s*,\\s*");
             return Arrays.asList(arrs);
         }
 
@@ -594,7 +594,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
          */
         private class DownloadTask implements Runnable {
 
-            private File name;
+            private final File name;
 
             private final File dest;
 
@@ -625,12 +625,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     return;
                 }
 
+                String filePath = sourceFile.getCanonicalPath();
+
                 logger.log(Level.INFO, "Copying file: {0} to path: {1}", new Object[]{sourceFile.getAbsolutePath(),
                         targetFile.getAbsolutePath()});
-                detailsBox.append("Copying file " + sourceFile.getAbsolutePath() + " ... " + "\n");
+                detailsBox.append("Copying: " + filePath + "\n");
 
                 FileUtils.copyFile(name, targetFile);
                 logger.log(Level.INFO, "Copied file:{0}", new Object[]{sourceFile.getAbsolutePath()});
+                detailsBox.append("Done: " + filePath + "\n");
             }
         }
     }
