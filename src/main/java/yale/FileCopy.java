@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
-import javax.swing.JProgressBar;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JMenu;
@@ -76,8 +75,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private JTextField txtTarget;
 
-    private JProgressBar progressAll;
-
     private JTextArea detailsBox;
 
     private JTextArea txtIdentifiers;
@@ -93,10 +90,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     private boolean stop = false;
 
     private JCheckBox checkBox;
-
-    private List<String> dirs = new ArrayList<String>();  // cache of directories
-
-    ConcurrentMap<String, String> map;
 
     public FileCopy() {
         buildGUI();
@@ -179,8 +172,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         buttonsPanel.add(selectSourceButton, BorderLayout.WEST);
         buttonsPanel.add(selectTargetButton, BorderLayout.EAST);
 
-        progressAll = new JProgressBar(0, 100);
-        progressAll.setStringPainted(true);
         detailsBox = new JTextArea(5, 50);
 
         final Color c = Color.WHITE;
@@ -229,13 +220,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         final JPanel panInputLabels = new JPanel(new BorderLayout(0, 5));
         final JPanel panInputFields = new JPanel(new BorderLayout(0, 5));
-        final JPanel panProgressBars = new JPanel(new BorderLayout(0, 5));
 
         panInputLabels.add(lblSource, BorderLayout.NORTH);
         panInputLabels.add(lblTarget, BorderLayout.CENTER);
         panInputFields.add(txtSource, BorderLayout.NORTH);
         panInputFields.add(txtTarget, BorderLayout.CENTER);
-        panProgressBars.add(progressAll, BorderLayout.NORTH);
 
         final JPanel panInput = new JPanel(new BorderLayout(0, 5));
         panInput.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Path"),
@@ -261,7 +250,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         panInput.add(panInputFields, BorderLayout.CENTER);
         panIds.add(scrollPane2, BorderLayout.CENTER);
         infoPanel.add(scrollPane, BorderLayout.CENTER);
-        infoPanel.add(panProgressBars, BorderLayout.SOUTH);
         panControls.add(btnCopy, BorderLayout.CENTER);
 
         // Add the checkbox:
@@ -382,10 +370,6 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("progress".equals(evt.getPropertyName())) {
-            int progress = (Integer) evt.getNewValue();
-            progressAll.setValue(progress);
-        }
     }
 
     public static void main(String[] args) {
@@ -406,18 +390,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
         private File target;
 
-        private long totalBytes = 0L;
-
-        private long copiedBytes = 0L;
-
         private final int MAX_THREADS = 10;
-
-        private List<String> identifiers = new ArrayList<String>();
 
         public CopyTask(File source, File target) {
             this.source = source;
             this.target = target;
-            progressAll.setValue(0);
         }
 
         /**
