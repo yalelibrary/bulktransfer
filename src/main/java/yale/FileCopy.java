@@ -358,13 +358,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             task = this.new CopyTask(source, target);
             task.addPropertyChangeListener(this);
             task.execute();
-            btnCopy.setText("Cancel");
-        } else if ("Cancel".equals(btnCopy.getText())) {
-            synchronized (this)  {
-                stop = true;
-            }
-            task.cancel(true);
-            btnCopy.setText("Copy");
+            //btnCopy.setText("Cancel");
         }
     }
 
