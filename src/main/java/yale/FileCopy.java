@@ -87,6 +87,8 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
     private String target = "";
 
+    private static String LINE_SEPARTOR = System.getProperty("line.separator");
+
     private boolean stop = false;
 
     private JCheckBox checkBox;
@@ -406,12 +408,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
             }
 
             if (invalidTarget(target.getAbsolutePath())) {
-                detailsBox.append("Forbidden target folder " + "\n");
+                detailsBox.append("Forbidden target folder " + LINE_SEPARTOR);
                 return null;
             }
 
             logger.log(Level.INFO, "Started processing:{0}", source.getAbsolutePath());
-            detailsBox.append("\nStarted processing: " + new Date().toString() + "\n");
+            detailsBox.append("\nStarted processing: " + new Date().toString() + LINE_SEPARTOR);
 
             try {
                 final List<String> fileNames = expandNumbers(getIdentifiers(txtIdentifiers.getText()));
@@ -422,7 +424,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 detailsBox.append("\n Error in copying one or more files: \n" + e.getCause());
             }
 
-            detailsBox.append("End: " + new Date().toString() + "\n");
+            detailsBox.append("End: " + new Date().toString() + LINE_SEPARTOR);
             logger.log(Level.INFO, "Ended processing:{0}", source.getAbsolutePath());
             return null;
         }
@@ -607,7 +609,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 // if it already exists skip it if the user wants
                 if (!checkBox.isSelected() && targetFile.exists()) {
                     logger.log(Level.INFO, "Skipped file:{0}", new Object[]{sourceFile.getAbsolutePath()});
-                    detailsBox.append("Skipped file: " + sourceFile.getAbsolutePath() + "\n");
+                    detailsBox.append("Skipped file: " + sourceFile.getAbsolutePath() + LINE_SEPARTOR);
                     return;
                 }
 
@@ -615,16 +617,16 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                 logger.log(Level.INFO, "Copying file: {0} to path: {1}", new Object[]{sourceFile.getAbsolutePath(),
                         targetFile.getAbsolutePath()});
-                detailsBox.append("Copying: " + filePath + "\n");
+                detailsBox.append("Copying: " + filePath + LINE_SEPARTOR);
 
                 try {
                     FileUtils.copyFile(name, targetFile);
                 } catch (IOException e) {
-                    detailsBox.append("Error in copying:" + filePath + " : " + e.getMessage() +"\n");
+                    detailsBox.append("Error in copying:" + filePath + " : " + e.getMessage() +LINE_SEPARTOR);
                     throw e;
                 }
                 logger.log(Level.INFO, "Copied file:{0}", new Object[]{sourceFile.getAbsolutePath()});
-                detailsBox.append("Done: " + filePath + "\n");
+                detailsBox.append("Done: " + filePath + LINE_SEPARTOR);
             }
         }
     }
