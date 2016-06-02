@@ -1,6 +1,7 @@
 package yale;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -460,8 +461,16 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
 
                     //logger.info("File paths from service:" + filePaths);
 
-                    for (final String src : filePaths) {
-                        final File srcFile = new File(src);
+                    for (String src : filePaths) {
+
+                        File srcFile = new File(src);
+
+                        // See if it's a unix path (note service dependent. the service should not return prefix)
+                        if (!srcFile.exists() && src.contains("\\storage.yale.edu")) { //TODO service dependent
+                            src = src.replace("\\storage.yale.edu", "/Volumes");
+                            src = FilenameUtils.separatorsToUnix(src);
+                            srcFile = new File(src);
+                        }
 
                         if (!srcFile.exists()) {
                             logger.log(Level.INFO, "File does not exist: {0}", new String[]{src});
