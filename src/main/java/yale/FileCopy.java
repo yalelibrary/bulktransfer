@@ -469,13 +469,18 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                         if (!srcFile.exists() && src.contains("\\storage.yale.edu")) { //TODO service dependent
                             src = src.replace("\\storage.yale.edu", "/Volumes");
                             src = FilenameUtils.separatorsToUnix(src);
+                            src = src.replace("//", "/");
                             srcFile = new File(src);
                         }
 
                         if (!srcFile.exists()) {
                             logger.log(Level.INFO, "File does not exist: {0}", new String[]{src});
+                            detailsBox.append("File not found:" + src + LINE_SEPARTOR);
                             continue;
+                        } else {
+                            logger.log(Level.INFO, "File found: {0}", new String[]{src});
                         }
+
                         final String d = src.replace(source.getAbsolutePath(), "");
                         final String destFile = target.getAbsolutePath() + File.separator + d;
 
