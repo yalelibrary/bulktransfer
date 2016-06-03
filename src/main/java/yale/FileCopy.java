@@ -485,11 +485,12 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                     for (String pathOnServiceShare : sharePath) {
 
                         File srcFile = new File(pathOnServiceShare);
+                        String pathOnClient = pathOnServiceShare;
 
                         // See if it's a unix path (note service dependent. the service should not return prefix)
                         if (!srcFile.exists() && pathOnServiceShare.contains("\\storage.yale.edu")){
                             // 2nd argument in the following line, i.e., source is client's actual mount point
-                            final String pathOnClient = convertSharePath(separatorsToUnix(pathOnServiceShare), source.getAbsolutePath());
+                            pathOnClient = convertSharePath(separatorsToUnix(pathOnServiceShare), source.getAbsolutePath());
                             srcFile = new File(pathOnClient);
                         }
 
@@ -499,7 +500,7 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                             continue;
                         }
 
-                        final String d = pathOnServiceShare.replace(source.getAbsolutePath(), "");
+                        final String d = pathOnClient.replace(source.getAbsolutePath(), "");
                         final String destFile = target.getAbsolutePath() + File.separator + d;
                         final File f = new File(destFile);
                         paths.put(srcFile, f);
