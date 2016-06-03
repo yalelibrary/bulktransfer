@@ -58,6 +58,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.SwingWorker;
 
+import static org.apache.commons.io.FilenameUtils.separatorsToUnix;
+
 
 /**
  * GUI for file search and transfer
@@ -383,6 +385,24 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
     }
 
     /**
+     * Converts path from one share to another based on similarity
+     * @param serviceSource e.g., \\storage.yale.edu\home\share/DL/folder/1.tiff
+     * @param clientSource where client mounted, e.g., /Volumes/share/DL
+     * @return modified path, e.g., /Volume/share/DL/folder/1.tiff
+     */
+    public String convertSharePath(final String serviceSource, final String clientSource) {
+
+        if (serviceSource == null || clientSource == null) {
+            return "";
+        }
+
+        String lastFolder = clientSource.substring(clientSource.lastIndexOf('/') + 1, clientSource.length());
+        String stringA = serviceSource.substring(serviceSource.indexOf(lastFolder));
+        String stringB = clientSource.substring(0, clientSource.lastIndexOf(lastFolder));
+        return stringB + stringA;
+    }
+
+    /**
      * Actual copying
      */
     private class CopyTask extends SwingWorker<Void, Integer> {
@@ -457,37 +477,34 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                 for (final String id : identifiers) { //batch should be ok. TODO check
                     detailsBox.append("Searching for:" + id + System.getProperty("line.separator"));
                     final String response = doGET(id);
-                    final List<String> filePaths = extract(response);
+                    final List<String> sharePath = extract(response); //e.g., //storage.yale.edu/.. computed at serve
+                    // this may be different from how the client has mounted, so need to convert it
 
                     //logger.info("File paths from service:" + filePaths);
 
-                    for (String src : filePaths) {
+                    for (String pathOnServiceShare : sharePath) {
 
-                        File srcFile = new File(src);
+                        File srcFile = new File(pathOnServiceShare);
 
                         // See if it's a unix path (note service dependent. the service should not return prefix)
-                        if (!srcFile.exists() && src.contains("\\storage.yale.edu")) { //TODO service dependent
-                            src = src.replace("\\storage.yale.edu", "/Volumes");
-                            src = FilenameUtils.separatorsToSystem(src);
-                            src = src.replace("//", "/");
-                            srcFile = new File(src);
+                        if (!srcFile.exists() && pathOnServiceShare.contains("\\storage.yale.edu")){
+                            // 2nd argument in the following line, i.e., source is client's actual mount point
+                            final String pathOnClient = convertSharePath(separatorsToUnix(pathOnServiceShare), source.getAbsolutePath());
+                            srcFile = new File(pathOnClient);
                         }
 
                         if (!srcFile.exists()) {
-                            logger.log(Level.INFO, "File does not exist: {0}", new String[]{src});
-                            detailsBox.append("File not found:" + src + LINE_SEPARTOR);
+                            logger.log(Level.INFO, "File does not exist: {0}", new String[]{pathOnServiceShare});
+                            detailsBox.append("File not found:" + pathOnServiceShare + LINE_SEPARTOR);
                             continue;
-                        } else {
-                            logger.log(Level.INFO, "File found: {0}", new String[]{src});
                         }
 
-                        final String d = src.replace(source.getAbsolutePath(), "");
+                        final String d = pathOnServiceShare.replace(source.getAbsolutePath(), "");
                         final String destFile = target.getAbsolutePath() + File.separator + d;
-
                         final File f = new File(destFile);
-
                         paths.put(srcFile, f);
-                        logger.log(Level.INFO, "Populated map entry:{0}{1}", new String[]{src, destFile});
+
+                        logger.log(Level.INFO, "Populated map entry:{0}{1}", new String[]{pathOnServiceShare, destFile});
                     }
                 }
             } catch (Exception e) {
