@@ -395,6 +395,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
         if (serviceSource == null || clientSource == null) {
             throw new IllegalArgumentException("Error with input:" + serviceSource + ":" + clientSource + ":" + lastFolder);
         }
+
+        if (serviceSource.indexOf(lastFolder) == -1) {
+            return "";
+        }
+
         final String stringA = serviceSource.substring(serviceSource.indexOf(lastFolder));
         final String stringB = clientSource.substring(0, clientSource.lastIndexOf(lastFolder));
         return stringB + stringA;
@@ -512,6 +517,11 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                             // 2nd argument in the following line, i.e., source is client's actual mount point
                             final String sourcePath = source.getAbsolutePath();
                             pathOnClient = convertSharePath(separatorsToUnix(pathOnServiceShare), sourcePath, getLast(sourcePath));
+
+                            if (pathOnClient.isEmpty()) {
+                                continue;
+                            }
+
                             srcFile = new File(pathOnClient);
                         }
 
