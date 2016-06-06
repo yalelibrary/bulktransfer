@@ -390,16 +390,36 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
      * @param clientSource where client mounted, e.g., /Volumes/share/DL
      * @return modified path, e.g., /Volume/share/DL/folder/1.tiff
      */
-    public String convertSharePath(final String serviceSource, final String clientSource) {
+    public String convertSharePath(final String serviceSource, final String clientSource, final String lastFolder) {
 
         if (serviceSource == null || clientSource == null) {
-            return "";
+            throw new IllegalArgumentException("Error with input:" + serviceSource + ":" + clientSource + ":" + lastFolder);
+        }
+        final String stringA = serviceSource.substring(serviceSource.indexOf(lastFolder));
+        final String stringB = clientSource.substring(0, clientSource.lastIndexOf(lastFolder));
+        return stringB + stringA;
+    }
+
+    public String getLast(final String clientSource) {
+        if (clientSource.lastIndexOf('/') != -1) {
+            return clientSource.substring(clientSource.lastIndexOf('/') + 1, clientSource.length());
         }
 
-        String lastFolder = clientSource.substring(clientSource.lastIndexOf('/') + 1, clientSource.length());
-        String stringA = serviceSource.substring(serviceSource.indexOf(lastFolder));
-        String stringB = clientSource.substring(0, clientSource.lastIndexOf(lastFolder));
-        return stringB + stringA;
+        if (clientSource.lastIndexOf('\\') != -1) { // use file system property
+            return clientSource.substring(clientSource.lastIndexOf('\\') + 1, clientSource.length());
+        }
+
+        throw new IllegalArgumentException("Unexpected input:" + clientSource);
+    }
+
+    public boolean foundOnPath(String path, String folder) {
+        final String[] parts = path.split("\\\\");  //TODO check (assumes service has win path)
+        for (String part : parts) {
+            if (part.equalsIgnoreCase(folder)) { //TODO check
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -487,11 +507,17 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                         File srcFile = new File(pathOnServiceShare);
                         String pathOnClient = pathOnServiceShare;
 
-                        // See if it's a unix path (note service dependent. the service should not return prefix)
-                        if (!srcFile.exists() && pathOnServiceShare.contains("\\storage.yale.edu")){
+                        // See if it's a unix path (note service dependent. the service should not return prefix storage.yale.edu?)
+                        if (!srcFile.exists() && pathOnServiceShare.contains("\\storage.yale.edu")) {
                             // 2nd argument in the following line, i.e., source is client's actual mount point
-                            pathOnClient = convertSharePath(separatorsToUnix(pathOnServiceShare), source.getAbsolutePath());
+                            final String sourcePath = source.getAbsolutePath();
+                            pathOnClient = convertSharePath(separatorsToUnix(pathOnServiceShare), sourcePath, getLast(sourcePath));
                             srcFile = new File(pathOnClient);
+                        }
+
+                        //if (!pathOnServiceShare.contains(getLast(source.getAbsolutePath()))) {
+                        if (!foundOnPath(pathOnServiceShare, getLast(source.getAbsolutePath()))) {
+                            continue; // skip folder if it's not wanted even if it's in the index
                         }
 
                         if (!srcFile.exists()) {
@@ -508,11 +534,15 @@ public class FileCopy extends JFrame implements ActionListener, PropertyChangeLi
                         logger.log(Level.INFO, "Populated map entry:{0}{1}", new String[]{pathOnServiceShare, destFile});
                     }
                 }
+            } catch (IllegalArgumentException e2) {
+                logger.log(Level.WARNING, "Error input", e2);
             } catch (Exception e) {
                 logger.log(Level.INFO, "Error looking up file path for:", e);
             }
             return paths;
         }
+
+
 
         private List<String> getIdentifiers(final String text) {
             final List<String> lines = Arrays.asList(text.split("\\r?\\n")); //split by line
