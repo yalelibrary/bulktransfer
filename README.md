@@ -1,8 +1,16 @@
 # File Transfer Utility
 
-Swing application to allow file copy from remote shares.
+Swing application aka TiffFinder to allow file copy from remote shares.
 
-## Mac Instructions
+# Dependency:
+
+The app relies on an indexing/crawling service running on smdr01. The service repo is:
+
+https://github.com/yalelibrary/fileservice
+
+See instructions there on how to build and deploy the project.
+
+## Mac Installation/Run Instructions
 
 1. Open Finder / select "Go" / select "Connect to Server...".
 2. Enter server address: "smb://storage.yale.edu/home/fc_Beinecke_807001-YUL".This will mount the share. Make sure
@@ -28,6 +36,6 @@ jar cfm filetransferutility.jar Manifest.txt yale/*.class
 
 You must be in production/out directory for this to happen. Run javac it if the directory does not exist.
 
-##Author
+## Author
 
 Osman Din
